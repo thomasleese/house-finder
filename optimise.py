@@ -6,11 +6,11 @@ import requests
 import yaml
 
 
-Listing = namedtuple('Listing', ['location', 'price', 'url'])
-ConstraintResult = namedtuple('ConstraintResult', ['constraint', 'value',
-                                                   'weighted_value'])
-_Constraint = namedtuple('Constraint', ['name', 'type', 'closest_to',
-                                        'weight'])
+Listing = namedtuple('Listing', ['location', 'price', 'url', 'address'])
+ConstraintResult = namedtuple('ConstraintResult',
+                              ['constraint', 'score', 'weighted_score'])
+_Constraint = namedtuple('Constraint',
+                         ['name', 'type', 'closest_to', 'weight'])
 
 
 class Constraint(_Constraint):
@@ -23,8 +23,8 @@ class Constraint(_Constraint):
             raise ValueError('Unsupported type: {}'.format(self.type))
 
     def calculate_weighted(self, listing):
-        value = self.calculate(listing)
-        return ConstraintResult(self, value, value * self.weight)
+        score = self.calculate(listing)
+        return ConstraintResult(self, score, score * self.weight)
 
 
 class Property:
@@ -40,12 +40,12 @@ class Property:
             self.results.append(constraint.calculate_weighted(self.listing))
 
     @property
-    def value(self):
-        return sum(c.value for c in self.results)
+    def score(self):
+        return sum(c.score for c in self.results)
 
     @property
-    def weighted_value(self):
-        return sum(c.weighted_value for c in self.results)
+    def weighted_score(self):
+        return sum(c.weighted_score for c in self.results)
 
 
 class Searcher:
@@ -87,7 +87,8 @@ class Searcher:
                 location = (listing['latitude'], listing['longitude'])
                 price = int(listing['price'])
                 url = listing['details_url']
-                yield Listing(location, price, url)
+                address = listing['displayable_address']
+                yield Listing(location, price, url, address)
 
             params['page_number'] += 1
 
@@ -110,26 +111,26 @@ def optimise(house, secrets, output):
         property.apply_constraints(constraints)
         properties.append(property)
 
-    properties.sort(key=lambda property: property.value)
+    properties.sort(key=lambda property: property.weighted_score)
 
-    headings = ['URL']
+    headings = ['Address', 'URL']
     for constraint in constraints:
         headings.append(constraint.name)
-        headings.append('Weighted Value')
-    headings.append('Value')
-    headings.append('Weighted Value')
+        headings.append('Weighted Score')
+    headings.append('Score')
+    headings.append('Weighted Score')
 
     with open(output, 'w') as file:
         writer = csv.writer(file)
         writer.writerow(headings)
 
         for property in properties:
-            row = [property.listing.url]
+            row = [property.listing.address, property.listing.url]
             for i, _ in enumerate(constraints):
-                row.append(property.results[i].value)
-                row.append(property.results[i].weighted_value)
-            row.append(property.value)
-            row.append(property.weighted_value)
+                row.append(property.results[i].score)
+                row.append(property.results[i].weighted_score)
+            row.append(property.score)
+            row.append(property.weighted_score)
             writer.writerow(row)
 
 
