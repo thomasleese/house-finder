@@ -1,3 +1,8 @@
+search:
+  area: Derby
+  type: rent
+  bedrooms: [3, 3]
+
 constraints:
   - type: location
     closest_to: [52.9193646, -1.4729871]  # shopping centre
