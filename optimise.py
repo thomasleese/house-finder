@@ -1,4 +1,5 @@
 from collections import namedtuple
+import csv
 
 from geopy.distance import vincenty
 import requests
@@ -6,8 +7,10 @@ import yaml
 
 
 Listing = namedtuple('Listing', ['location', 'price', 'url'])
-
-_Constraint = namedtuple('Constraint', ['type', 'closest_to', 'weight'])
+ConstraintResult = namedtuple('ConstraintResult', ['constraint', 'value',
+                                                   'weighted_value'])
+_Constraint = namedtuple('Constraint', ['name', 'type', 'closest_to',
+                                        'weight'])
 
 
 class Constraint(_Constraint):
@@ -20,24 +23,29 @@ class Constraint(_Constraint):
             raise ValueError('Unsupported type: {}'.format(self.type))
 
     def calculate_weighted(self, listing):
-        return self.calculate(listing) * self.weight
+        value = self.calculate(listing)
+        return ConstraintResult(self, value, value * self.weight)
 
 
 class Property:
     def __init__(self, listing):
         self.listing = listing
-        self.values = []
+        self.results = []
 
     def __str__(self):
         return '{}: {}'.format(self.listing, self.value)
 
     def apply_constraints(self, constraints):
         for constraint in constraints:
-            self.values.append(constraint.calculate_weighted(self.listing))
+            self.results.append(constraint.calculate_weighted(self.listing))
 
     @property
     def value(self):
-        return sum(self.values)
+        return sum(c.value for c in self.results)
+
+    @property
+    def weighted_value(self):
+        return sum(c.weighted_value for c in self.results)
 
 
 class Searcher:
@@ -66,7 +74,11 @@ class Searcher:
 
         while True:
             response = requests.get(url, params=params)
-            json = response.json()
+
+            try:
+                json = response.json()
+            except ValueError:
+                break
 
             if not json['listing']:
                 break
@@ -83,7 +95,7 @@ class Searcher:
         yield from self.search_zoopla()
 
 
-def optimise(house, secrets):
+def optimise(house, secrets, output):
     searcher = Searcher(secrets, house['search'])
 
     constraints = [Constraint(**c) for c in house['constraints']]
@@ -100,8 +112,25 @@ def optimise(house, secrets):
 
     properties.sort(key=lambda property: property.value)
 
-    for property in properties:
-        print(property)
+    headings = ['URL']
+    for constraint in constraints:
+        headings.append(constraint.name)
+        headings.append('Weighted Value')
+    headings.append('Value')
+    headings.append('Weighted Value')
+
+    with open(output, 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(headings)
+
+        for property in properties:
+            row = [property.listing.url]
+            for i, _ in enumerate(constraints):
+                row.append(property.results[i].value)
+                row.append(property.results[i].weighted_value)
+            row.append(property.value)
+            row.append(property.weighted_value)
+            writer.writerow(row)
 
 
 def main():
@@ -110,6 +139,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('house')
     parser.add_argument('secrets')
+    parser.add_argument('output')
     args = parser.parse_args()
 
     with open(args.house) as file:
@@ -118,7 +148,7 @@ def main():
     with open(args.secrets) as file:
         secrets = yaml.load(file)
 
-    optimise(house, secrets)
+    optimise(house, secrets, args.output)
 
 
 if __name__ == '__main__':
