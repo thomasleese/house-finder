@@ -1,0 +1,12 @@
+constraints:
+  - type: location
+    closest_to: [52.9193646, -1.4729871]  # shopping centre
+    weight: 0.5
+
+  - type: location
+    closest_to: [52.8896217, -1.4668297]  # Rolls-Royce campus
+    weight: 0.8
+
+  - type: price
+    closest_to: 0
+    weight: 2
