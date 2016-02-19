@@ -1,7 +1,10 @@
 from collections import namedtuple
 import csv
+import time
 
 from geopy.distance import vincenty
+from geopy.geocoders import GoogleV3
+import lxml.html
 import requests
 import yaml
 
@@ -86,14 +89,94 @@ class Searcher:
             for listing in json['listing']:
                 location = (listing['latitude'], listing['longitude'])
                 price = int(listing['price'])
-                url = listing['details_url']
+                listing_url = listing['details_url']
                 address = listing['displayable_address']
-                yield Listing(location, price, url, address)
+                yield Listing(location, price, listing_url, address)
 
             params['page_number'] += 1
 
+    def search_rightmove(self):
+        print('Searching RightMove...')
+
+        type_ahead = [self.query['area'][:2].upper(),
+                      self.query['area'][2:4].upper()]
+        url = 'http://www.rightmove.co.uk/typeAhead/uknostreet/{}/{}' \
+            .format(type_ahead[0], type_ahead[1])
+
+        response = requests.get(url)
+        location = response.json()['typeAheadLocations'][0] \
+            ['locationIdentifier']
+
+        url = 'http://www.rightmove.co.uk/property-to-rent/find.html'
+        params = {
+            'searchType': self.query['type'].upper(),
+            'locationIdentifier': location,
+            'insId': 1,
+            'radius': 0.0,
+            'minBedrooms': self.query['bedrooms'][0],
+            'maxBedrooms': self.query['bedrooms'][1],
+            'houseFlatShare': 'false',
+            'numberOfPropertiesPerPage': 50,
+            'index': 0
+        }
+
+        """
+        http://www.rightmove.co.uk/property-to-rent/find.html?
+        searchType=RENT
+        &locationIdentifier=REGION%5E418
+        &insId=1
+        &radius=0.0
+        &minPrice=
+        &maxPrice=
+        &minBedrooms=3
+        &maxBedrooms=3
+        &displayPropertyType=
+        &maxDaysSinceAdded=
+        &sortByPriceDescending=
+        &_includeLetAgreed=on
+        &primaryDisplayPropertyType=
+        &secondaryDisplayPropertyType=
+        &oldDisplayPropertyType=
+        &oldPrimaryDisplayPropertyType=
+        &letType=&letFurnishType=
+        &houseFlatShare=false
+        """
+
+        total = None
+
+        while total is None or params['index'] <= total:
+            response = requests.get(url, params=params)
+            print(response.url)
+
+            tree = lxml.html.fromstring(response.content)
+            tree.make_links_absolute(url)
+
+            listings = tree.cssselect('#summaries .summary-list-item')
+            for listing in listings:
+                address = listing.cssselect('.displayaddress')[0] \
+                    .text_content()
+
+                geolocator = GoogleV3(self.secrets['geo']['api_key'])
+                location = geolocator.geocode(address)
+                if location is None:
+                    continue
+
+                location = (location.latitude, location.longitude)
+
+                price = int(listing.cssselect('.price')[0].text_content().strip().replace(',', '').split(' ')[0][1:])
+
+                listing_url = listing.cssselect('.price-new a')[0].get('href')
+
+                yield Listing(location, price, listing_url, address)
+
+            if total is None:
+                total = int(tree.cssselect('#resultcount')[0].text_content())
+
+            params['index'] += params['numberOfPropertiesPerPage']
+
     def search(self):
         yield from self.search_zoopla()
+        yield from self.search_rightmove()
 
 
 def optimise(house, secrets, output):
