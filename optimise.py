@@ -1,15 +1,21 @@
 from collections import namedtuple
 import csv
+import os
+import shutil
+import subprocess
+import tempfile
 import time
+import urllib.parse
 
 from geopy.distance import vincenty
 from geopy.geocoders import GoogleV3
+import jinja2
 import lxml.html
 import requests
 import yaml
 
 
-Listing = namedtuple('Listing', ['location', 'price', 'url', 'address'])
+Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url', 'address', 'description', 'image'])
 ConstraintResult = namedtuple('ConstraintResult',
                               ['constraint', 'score', 'weighted_score'])
 _Constraint = namedtuple('Constraint',
@@ -87,11 +93,15 @@ class Searcher:
                 break
 
             for listing in json['listing']:
+                id = listing['listing_id']
                 location = (listing['latitude'], listing['longitude'])
                 price = int(listing['price'])
-                listing_url = listing['details_url']
+                url = listing['details_url']
+                print_url = 'http://www.zoopla.co.uk/to-rent/details/print/{}'.format(id)
                 address = listing['displayable_address']
-                yield Listing(location, price, listing_url, address)
+                image = listing['image_url']
+                description = listing['description']
+                yield Listing(id, location, price, url, print_url, address, description, image)
 
             params['page_number'] += 1
 
@@ -170,13 +180,42 @@ class Searcher:
                 yield Listing(location, price, listing_url, address)
 
             if total is None:
-                total = int(tree.cssselect('#resultcount')[0].text_content())
+                total = int(tree.cssselect('#searchHeader-resultCount')[0].text_content())
 
             params['index'] += params['numberOfPropertiesPerPage']
 
     def search(self):
         yield from self.search_zoopla()
-        yield from self.search_rightmove()
+        #yield from self.search_rightmove()
+
+
+def clean_url(url):
+    o = urllib.parse.urlparse(url)
+    return o.scheme + '://' + o.netloc + o.path
+
+
+def generate_property_pdf(property):
+    filename = 'outputs/{}.pdf'.format(property.listing.id)
+
+    if not os.path.exists(filename):
+        args = ['wkhtmltopdf',
+                '--footer-center', clean_url(property.listing.url),
+                '-q',
+                property.listing.print_url,
+                filename]
+        subprocess.check_call(args)
+
+    return filename
+
+def generate_output(filename, properties, constraints):
+    filenames = []
+
+    for i, property in enumerate(properties):
+        print('#{}'.format(i + 1), property.listing.address)
+        filenames.append(generate_property_pdf(property))
+        filenames.append('1')  # only first page
+
+    subprocess.check_call(['pdfjam'] + filenames + ['-o', filename])
 
 
 def optimise(house, secrets, output):
@@ -196,25 +235,7 @@ def optimise(house, secrets, output):
 
     properties.sort(key=lambda property: property.weighted_score)
 
-    headings = ['Address', 'URL']
-    for constraint in constraints:
-        headings.append(constraint.name)
-        headings.append('Weighted Score')
-    headings.append('Score')
-    headings.append('Weighted Score')
-
-    with open(output, 'w') as file:
-        writer = csv.writer(file)
-        writer.writerow(headings)
-
-        for property in properties:
-            row = [property.listing.address, property.listing.url]
-            for i, _ in enumerate(constraints):
-                row.append(property.results[i].score)
-                row.append(property.results[i].weighted_score)
-            row.append(property.score)
-            row.append(property.weighted_score)
-            writer.writerow(row)
+    generate_output(output, properties, constraints)
 
 
 def main():

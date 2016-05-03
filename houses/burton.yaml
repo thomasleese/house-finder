@@ -1,0 +1,15 @@
+search:
+  area: Burton
+  type: rent
+  bedrooms: [2, 2]
+
+constraints:
+  - name: Distance to Train Station
+    type: location
+    closest_to: [52.8058262,-1.6425266]
+    weight: 0.75
+
+  - name: Price
+    type: price
+    closest_to: 0
+    weight: 1.5

@@ -1,7 +1,7 @@
 search:
   area: Derby
   type: rent
-  bedrooms: [3, 3]
+  bedrooms: [2, 3]
 
 constraints:
   - name: Distance to Intu
@@ -12,7 +12,7 @@ constraints:
   - name: Distance to Rolls-Royce
     type: location
     closest_to: [52.8896217, -1.4668297]  # Rolls-Royce campus
-    weight: 0.8
+    weight: 1
 
   - name: Price
     type: price
