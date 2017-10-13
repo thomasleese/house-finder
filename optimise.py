@@ -203,7 +203,12 @@ def generate_property_pdf(property):
                 '-q',
                 property.listing.print_url,
                 filename]
-        subprocess.check_call(args)
+
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            if not os.path.exists(filename):
+                raise
 
     return filename
 
