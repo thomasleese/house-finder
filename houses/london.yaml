@@ -14,7 +14,12 @@ constraints:
     closest_to: [51.5304202, -0.1238148]
     weight: 0.1
 
+  - name: Distance to Mile End
+    type: location
+    closest_to: [51.5251373, -0.0335253]
+    weight: 1.5
+
   - name: Distance to GDS
     type: location
     closest_to: [51.5143982, -0.0731517]
-    weight: 1
+    weight: 0.5
