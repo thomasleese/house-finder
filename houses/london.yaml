@@ -1,0 +1,20 @@
+search:
+  area: East London
+  type: rent
+  bedrooms: [1, 1]
+
+constraints:
+  - name: Price
+    type: price
+    closest_to: 0
+    weight: 3
+
+  - name: Distance to Kings Cross
+    type: location
+    closest_to: [51.5304202, -0.1238148]
+    weight: 0.1
+
+  - name: Distance to GDS
+    type: location
+    closest_to: [51.5143982, -0.0731517]
+    weight: 1
