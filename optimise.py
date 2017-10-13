@@ -73,12 +73,13 @@ class Searcher:
             'listing_status': self.query['type'],
             'minimum_beds': self.query['bedrooms'][0],
             'maximum_beds': self.query['bedrooms'][1],
+            'maximum_price': self.query['budget'],
 
             'summarised': 'yes',
 
             'api_key': self.secrets['zoopla']['api_key'],
             'page_size': 100,
-            'page_number': 1
+            'page_number': 1,
         }
 
         while True:
@@ -218,9 +219,9 @@ def generate_output(filename, properties, constraints):
     for i, property in enumerate(properties):
         print('#{}'.format(i + 1), property.listing.address)
         filenames.append(generate_property_pdf(property))
-        filenames.append('1')  # only first page
+        #filenames.append('1')  # only first page
 
-    subprocess.check_call(['pdfjam'] + filenames + ['-o', filename])
+    subprocess.check_call(['pdfunite'] + filenames + [filename])
 
 
 def optimise(house, secrets, output):

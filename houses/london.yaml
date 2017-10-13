@@ -2,6 +2,7 @@ search:
   area: East London
   type: rent
   bedrooms: [1, 1]
+  budget: 350
 
 constraints:
   - name: Price
