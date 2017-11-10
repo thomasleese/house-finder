@@ -9,23 +9,33 @@ import urllib.parse
 
 from geopy.distance import vincenty
 from geopy.geocoders import GoogleV3
+import googlemaps
 import requests
 import yaml
 
 
-Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url', 'address', 'description', 'image'])
+Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
+                                 'address', 'description', 'image'])
+
 ConstraintResult = namedtuple('ConstraintResult',
                               ['constraint', 'score', 'weighted_score'])
+
 _Constraint = namedtuple('Constraint',
                          ['name', 'type', 'closest_to', 'weight'])
 
+gmaps = None
+
 
 class Constraint(_Constraint):
+
     def calculate(self, listing):
         if self.type == 'price':
             return listing.price - self.closest_to
         elif self.type == 'location':
-            return vincenty(self.closest_to, listing.location).meters
+            closest_to = gmaps.geocode(self.closest_to)
+            location = closest_to[0]['geometry']['location']
+            lat_long = (location['lat'], location['lng'])
+            return vincenty(lat_long, listing.location).meters
         else:
             raise ValueError('Unsupported type: {}'.format(self.type))
 
@@ -35,6 +45,7 @@ class Constraint(_Constraint):
 
 
 class Property:
+
     def __init__(self, listing):
         self.listing = listing
         self.results = []
@@ -143,6 +154,9 @@ def generate_output(filename, properties, constraints):
 
 
 def optimise(house, secrets, output):
+    global gmaps
+    gmaps = googlemaps.Client(key=secrets['google']['api_key'])
+
     searcher = Searcher(secrets, house['search'])
 
     constraints = [Constraint(**c) for c in house['constraints']]
