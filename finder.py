@@ -1,5 +1,6 @@
 from collections import namedtuple
 import csv
+import logging
 import os
 import shutil
 import subprocess
@@ -14,25 +15,34 @@ import requests
 import yaml
 
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
                                  'address', 'description', 'image'])
 
 ConstraintResult = namedtuple('ConstraintResult',
                               ['constraint', 'score', 'weighted_score'])
 
-_Constraint = namedtuple('Constraint',
-                         ['name', 'closest_to', 'weight'])
+_Place = namedtuple('Place', ['name', 'weight'])
 
 gmaps = None
 
 
-class Constraint(_Constraint):
+class Place:
+
+    def __init__(self, name, weight):
+        self.name = name
+        self.weight = weight
+
+        geocode_results = gmaps.geocode(self.name)
+        location = geocode_results[0]['geometry']['location']
+        self.lat_long = (location['lat'], location['lng'])
+        logging.info(f'Loaded {self.name} as {self.lat_long}')
 
     def calculate(self, listing):
-        closest_to = gmaps.geocode(self.closest_to)
-        location = closest_to[0]['geometry']['location']
-        lat_long = (location['lat'], location['lng'])
-        return vincenty(lat_long, listing.location).meters
+        return vincenty(self.lat_long, listing.location).meters
 
     def calculate_weighted(self, listing):
         score = self.calculate(listing)
@@ -154,7 +164,7 @@ def optimise(house, secrets, output):
 
     searcher = Searcher(secrets, house['search'])
 
-    constraints = [Constraint(**c) for c in house['constraints']]
+    places = [Place(**c) for c in house['places']]
 
     listings = list(searcher.search())
     print('Found', len(listings), 'listings.')
@@ -163,12 +173,12 @@ def optimise(house, secrets, output):
 
     for listing in listings:
         property = Property(listing)
-        property.apply_constraints(constraints)
+        property.apply_constraints(places)
         properties.append(property)
 
     properties.sort(key=lambda property: property.weighted_score)
 
-    generate_output(output, properties, constraints)
+    generate_output(output, properties, places)
 
 
 def main():

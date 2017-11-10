@@ -4,15 +4,12 @@ search:
   bedrooms: [1, 1]
   budget: 350
 
-constraints:
-  - name: Distance to Kings Cross
-    closest_to: Kings Cross Station
+places:
+  - name: Kings Cross Station
     weight: 0.1
 
-  - name: Distance to Mile End
-    closest_to: Mile End Station
+  - name: Mile End Station
     weight: 1.5
 
-  - name: Distance to GDS
-    closest_to: Government Digital Service
+  - name: Government Digital Service
     weight: 0.5
