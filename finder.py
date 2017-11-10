@@ -22,31 +22,21 @@ logger = logging.getLogger(__name__)
 Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
                                  'address', 'description', 'image'])
 
-ConstraintResult = namedtuple('ConstraintResult',
-                              ['constraint', 'score', 'weighted_score'])
-
-_Place = namedtuple('Place', ['name', 'weight'])
-
 gmaps = None
 
 
 class Place:
 
-    def __init__(self, name, weight):
+    def __init__(self, name):
         self.name = name
-        self.weight = weight
 
         geocode_results = gmaps.geocode(self.name)
         location = geocode_results[0]['geometry']['location']
-        self.lat_long = (location['lat'], location['lng'])
-        logging.info(f'Loaded {self.name} as {self.lat_long}')
+        self.location = (location['lat'], location['lng'])
+        logging.info(f'Loaded {self.name} as {self.location}')
 
     def calculate(self, listing):
-        return vincenty(self.lat_long, listing.location).meters
-
-    def calculate_weighted(self, listing):
-        score = self.calculate(listing)
-        return ConstraintResult(self, score, score * self.weight)
+        return vincenty(self.location, listing.location).meters
 
 
 class Property:
@@ -60,15 +50,11 @@ class Property:
 
     def apply_constraints(self, constraints):
         for constraint in constraints:
-            self.results.append(constraint.calculate_weighted(self.listing))
+            self.results.append(constraint.calculate(self.listing))
 
     @property
     def score(self):
-        return sum(c.score for c in self.results)
-
-    @property
-    def weighted_score(self):
-        return sum(c.weighted_score for c in self.results)
+        return sum(self.results)
 
 
 class Searcher:
@@ -176,7 +162,7 @@ def optimise(house, secrets, output):
         property.apply_constraints(places)
         properties.append(property)
 
-    properties.sort(key=lambda property: property.weighted_score)
+    properties.sort(key=lambda property: property.score)
 
     generate_output(output, properties, places)
 

@@ -6,10 +6,7 @@ search:
 
 places:
   - name: Kings Cross Station
-    weight: 0.1
 
   - name: Mile End Station
-    weight: 1.5
 
   - name: Government Digital Service
-    weight: 0.5
