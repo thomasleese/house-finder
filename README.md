@@ -1,4 +1,4 @@
-# House Optimiser
+# House Finder
 
 A tool for finding the best value house in a location.
 
@@ -11,5 +11,5 @@ $ pipenv install
 ## Running
 
 ```bash
-$ pipenv run python optimise.py
+$ pipenv run python finder.py
 ```
