@@ -8,6 +8,7 @@ import tempfile
 import time
 import urllib.parse
 
+from cached_property import cached_property
 from geopy.distance import vincenty
 from geopy.geocoders import GoogleV3
 import googlemaps
@@ -22,21 +23,36 @@ logger = logging.getLogger(__name__)
 Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
                                  'address', 'description', 'image'])
 
-gmaps = None
-
 
 class Place:
 
-    def __init__(self, name):
+    def __init__(self, gmaps, name, mode, arrival_time=None, departure_time=None):
+        self.gmaps = gmaps
         self.name = name
+        self.mode = mode
+        self.arrival_time = arrival_time
+        self.departure_time = departure_time
 
-        geocode_results = gmaps.geocode(self.name)
+    @cached_property
+    def location(self):
+        geocode_results = self.gmaps.geocode(self.name)
         location = geocode_results[0]['geometry']['location']
-        self.location = (location['lat'], location['lng'])
-        logging.info(f'Loaded {self.name} as {self.location}')
+        lat_long = (location['lat'], location['lng'])
+        logging.info(f'Loaded {self.name} as {lat_long}')
+        return lat_long
+
+    def get_travel_time(self, location):
+        results = self.gmaps.directions(
+            self.name, location,
+            mode=self.mode
+        )
+
+        leg = results[0]['legs'][0]
+
+        return leg['duration']['value']
 
     def calculate(self, listing):
-        return vincenty(self.location, listing.location).meters
+        return self.get_travel_time(listing.location)
 
 
 class Property:
@@ -145,12 +161,11 @@ def generate_output(filename, properties, constraints):
 
 
 def optimise(house, secrets, output):
-    global gmaps
     gmaps = googlemaps.Client(key=secrets['google']['api_key'])
 
     searcher = Searcher(secrets, house['search'])
 
-    places = [Place(**c) for c in house['places']]
+    places = [Place(gmaps, **c) for c in house['places']]
 
     listings = list(searcher.search())
     print('Found', len(listings), 'listings.')
@@ -158,6 +173,7 @@ def optimise(house, secrets, output):
     properties = []
 
     for listing in listings:
+        print(f'Applying constraints for {listing.address}')
         property = Property(listing)
         property.apply_constraints(places)
         properties.append(property)

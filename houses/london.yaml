@@ -5,8 +5,13 @@ search:
   budget: 350
 
 places:
-  - name: Kings Cross Station
+  - name: PureGym Aldgate
+    mode: transit
+    arrival_time: 07:00
 
-  - name: Mile End Station
+  - name: Waterloo Station
+    mode: transit
 
   - name: Government Digital Service
+    mode: transit
+    arrival_time: 08:00

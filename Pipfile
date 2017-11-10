@@ -6,9 +6,10 @@ name = "pypi"
 [packages]
 
 geopy = "*"
-pyyaml = "*"
+PyYAML = "*"
 requests = "*"
 googlemaps = "*"
+"cached-property" = "*"
 
 
 [dev-packages]
