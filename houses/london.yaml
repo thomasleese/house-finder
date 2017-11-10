@@ -5,13 +5,26 @@ search:
   budget: 350
 
 places:
+  - name: Government Digital Service
+    mode: transit
+    arrival_time: '08:00'
+
+  - name: Government Digital Service
+    mode: transit
+    departure_time: '16:00'
+
   - name: PureGym Aldgate
     mode: transit
-    arrival_time: 07:00
+    arrival_time: '07:00'
 
   - name: Waterloo Station
     mode: transit
 
-  - name: Government Digital Service
+  - name: PureGym Canary Wharf
     mode: transit
-    arrival_time: 08:00
+
+  - name: London Euston Station
+    mode: transit
+
+  - name: London Paddington Station
+    mode: transit

@@ -1,5 +1,6 @@
 from collections import namedtuple
 import csv
+import datetime
 import logging
 import os
 import shutil
@@ -41,10 +42,25 @@ class Place:
         logging.info(f'Loaded {self.name} as {lat_long}')
         return lat_long
 
+    def format_time(self, string):
+        hour, minute = [int(x) for x in string.split(':')]
+        return datetime.datetime.utcnow().replace(hour=hour, minute=minute)
+
     def get_travel_time(self, location):
+        search_params = {
+            'mode': self.mode,
+            'traffic_model': 'pessimistic',
+        }
+
+        if self.arrival_time:
+            search_params['arrival_time'] = self.format_time(self.arrival_time)
+
+        if self.departure_time:
+            search_params['departure_time'] = self.format_time(self.departure_time)
+
         results = self.gmaps.directions(
             self.name, location,
-            mode=self.mode
+            **search_params,
         )
 
         leg = results[0]['legs'][0]
@@ -62,7 +78,7 @@ class Property:
         self.results = []
 
     def __str__(self):
-        return '{}: {}'.format(self.listing, self.value)
+        return f'{self.listing}: {self.value}'
 
     def apply_constraints(self, constraints):
         for constraint in constraints:
@@ -81,7 +97,7 @@ class Searcher:
         self.query = query
 
     def search_zoopla(self):
-        print('Searching Zoopla...')
+        logger.info('Searching Zoopla...')
 
         url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
         params = {
@@ -153,9 +169,8 @@ def generate_output(filename, properties, constraints):
     filenames = []
 
     for i, property in enumerate(properties):
-        print('#{}'.format(i + 1), property.listing.address)
+        logger.info(f'#{i} #{property.listing.address}')
         filenames.append(generate_property_pdf(property))
-        #filenames.append('1')  # only first page
 
     subprocess.check_call(['pdfunite'] + filenames + [filename])
 
@@ -168,12 +183,12 @@ def optimise(house, secrets, output):
     places = [Place(gmaps, **c) for c in house['places']]
 
     listings = list(searcher.search())
-    print('Found', len(listings), 'listings.')
+    logger.info('Found', len(listings), 'listings.')
 
     properties = []
 
     for listing in listings:
-        print(f'Applying constraints for {listing.address}')
+        logger.info(f'Applying constraints for {listing.address}')
         property = Property(listing)
         property.apply_constraints(places)
         properties.append(property)
