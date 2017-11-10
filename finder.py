@@ -21,7 +21,7 @@ ConstraintResult = namedtuple('ConstraintResult',
                               ['constraint', 'score', 'weighted_score'])
 
 _Constraint = namedtuple('Constraint',
-                         ['name', 'type', 'closest_to', 'weight'])
+                         ['name', 'closest_to', 'weight'])
 
 gmaps = None
 
@@ -29,15 +29,10 @@ gmaps = None
 class Constraint(_Constraint):
 
     def calculate(self, listing):
-        if self.type == 'price':
-            return listing.price - self.closest_to
-        elif self.type == 'location':
-            closest_to = gmaps.geocode(self.closest_to)
-            location = closest_to[0]['geometry']['location']
-            lat_long = (location['lat'], location['lng'])
-            return vincenty(lat_long, listing.location).meters
-        else:
-            raise ValueError('Unsupported type: {}'.format(self.type))
+        closest_to = gmaps.geocode(self.closest_to)
+        location = closest_to[0]['geometry']['location']
+        lat_long = (location['lat'], location['lng'])
+        return vincenty(lat_long, listing.location).meters
 
     def calculate_weighted(self, listing):
         score = self.calculate(listing)

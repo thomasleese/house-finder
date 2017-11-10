@@ -6,16 +6,13 @@ search:
 
 constraints:
   - name: Distance to Kings Cross
-    type: location
     closest_to: Kings Cross Station
     weight: 0.1
 
   - name: Distance to Mile End
-    type: location
     closest_to: Mile End Station
     weight: 1.5
 
   - name: Distance to GDS
-    type: location
     closest_to: Government Digital Service
     weight: 0.5
