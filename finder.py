@@ -48,6 +48,8 @@ class Place:
 
     def get_travel_time(self, location):
         search_params = {
+            'origin': location,
+            'destination': self.name,
             'mode': self.mode,
             'traffic_model': 'pessimistic',
         }
@@ -58,10 +60,7 @@ class Place:
         if self.departure_time:
             search_params['departure_time'] = self.format_time(self.departure_time)
 
-        results = self.gmaps.directions(
-            self.name, location,
-            **search_params,
-        )
+        results = self.gmaps.directions(**search_params)
 
         leg = results[0]['legs'][0]
 
@@ -99,13 +98,14 @@ class Searcher:
     def search_zoopla(self):
         logger.info('Searching Zoopla...')
 
-        url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
+        property_listings_url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
         params = {
             'area': self.query['area'],
             'listing_status': self.query['type'],
             'minimum_beds': self.query['bedrooms'][0],
             'maximum_beds': self.query['bedrooms'][1],
-            'maximum_price': self.query['budget'],
+            'minimum_price': self.query['price'][0],
+            'maximum_price': self.query['price'][1],
 
             'summarised': 'yes',
 
@@ -115,7 +115,7 @@ class Searcher:
         }
 
         while True:
-            response = requests.get(url, params=params)
+            response = requests.get(property_listings_url, params=params)
 
             try:
                 json = response.json()
@@ -129,12 +129,12 @@ class Searcher:
                 id = listing['listing_id']
                 location = (listing['latitude'], listing['longitude'])
                 price = int(listing['price'])
-                url = listing['details_url']
+                listing_url = listing['details_url']
                 print_url = 'http://www.zoopla.co.uk/to-rent/details/print/{}'.format(id)
                 address = listing['displayable_address']
                 image = listing['image_url']
                 description = listing['description']
-                yield Listing(id, location, price, url, print_url, address, description, image)
+                yield Listing(id, location, price, listing_url, print_url, address, description, image)
 
             params['page_number'] += 1
 
@@ -183,7 +183,7 @@ def optimise(house, secrets, output):
     places = [Place(gmaps, **c) for c in house['places']]
 
     listings = list(searcher.search())
-    logger.info('Found', len(listings), 'listings.')
+    logger.info('Found %i listings.', len(listings))
 
     properties = []
 
