@@ -73,8 +73,11 @@ class Place:
 
         results = self.gmaps.directions(**search_params)
 
-        leg = results[0]['legs'][0]
-        duration = leg['duration']['value']
+        try:
+            leg = results[0]['legs'][0]
+            duration = leg['duration']['value']
+        except (KeyError, IndexError):
+            duration = 1000
 
         cache[cache_key] = duration
         cache.sync()
@@ -190,7 +193,7 @@ def generate_output(filename, properties, constraints):
     filenames = []
 
     for i, property in enumerate(properties):
-        logger.info(f'#{i} #{property.listing.address}')
+        logger.info(f'#{i} -> {property.listing.address} : {property.listing.url}')
         filenames.append(generate_property_pdf(property))
 
     subprocess.check_call(['pdfunite'] + filenames + [filename])
@@ -208,11 +211,11 @@ def optimise(house, secrets, output):
 
     properties = []
 
-    for listing in listings:
-        logger.info(f'Applying constraints for {listing.address}')
+    for i, listing in enumerate(listings):
         property = Property(listing)
         property.apply_constraints(places)
         properties.append(property)
+        logger.info(f'#{i} -> {listing.address} : {property.score}')
 
     properties.sort(key=lambda property: property.score)
 

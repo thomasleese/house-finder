@@ -1,8 +1,8 @@
 search:
-  area: London
+  area: Central London
   type: rent
   bedrooms: [1, 2]
-  price: [300, 350]
+  price: [300, 360]
 
 places:
   - name: Government Digital Service
@@ -13,10 +13,10 @@ places:
     mode: transit
     departure_time: '16:00'
 
-  - name: PureGym Aldgate
+  - name: Imperial College London
     mode: transit
-    arrival_time: '07:00'
+    arrival_time: '09:00'
 
-  - name: PureGym Canary Wharf
+  - name: Imperial College London
     mode: transit
-    arrival_time: '19:00'
+    departure_time: '17:00'
