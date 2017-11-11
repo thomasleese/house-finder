@@ -1,8 +1,8 @@
 search:
-  area: Central London
+  area: London
   type: rent
   bedrooms: [1, 2]
-  price: [300, 360]
+  price: [325, 375]
 
 places:
   - name: Government Digital Service

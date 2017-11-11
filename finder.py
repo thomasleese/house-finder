@@ -219,6 +219,8 @@ def optimise(house, secrets, output):
 
     properties.sort(key=lambda property: property.score)
 
+    properties = properties[:100]
+
     generate_output(output, properties, places)
 
 
