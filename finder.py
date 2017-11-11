@@ -1,8 +1,10 @@
 from collections import namedtuple
 import csv
 import datetime
+import json
 import logging
 import os
+import shelve
 import shutil
 import subprocess
 import tempfile
@@ -14,6 +16,7 @@ from geopy.distance import vincenty
 from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
+import requests_cache
 import yaml
 
 
@@ -23,6 +26,9 @@ logger = logging.getLogger(__name__)
 
 Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
                                  'address', 'description', 'image'])
+
+
+cache = shelve.open('cache.db')
 
 
 class Place:
@@ -44,7 +50,7 @@ class Place:
 
     def format_time(self, string):
         hour, minute = [int(x) for x in string.split(':')]
-        return datetime.datetime.utcnow().replace(hour=hour, minute=minute)
+        return int(datetime.datetime.utcnow().replace(hour=hour, minute=minute, second=0).timestamp())
 
     def get_travel_time(self, location):
         search_params = {
@@ -60,11 +66,20 @@ class Place:
         if self.departure_time:
             search_params['departure_time'] = self.format_time(self.departure_time)
 
+        cache_key = json.dumps(search_params, sort_keys=True)
+
+        if cache_key in cache:
+            return cache[cache_key]
+
         results = self.gmaps.directions(**search_params)
 
         leg = results[0]['legs'][0]
+        duration = leg['duration']['value']
 
-        return leg['duration']['value']
+        cache[cache_key] = duration
+        cache.sync()
+
+        return duration
 
     def calculate(self, listing):
         return self.get_travel_time(listing.location)
@@ -95,6 +110,10 @@ class Searcher:
         self.secrets = secrets
         self.query = query
 
+        self.session = requests_cache.CachedSession(
+            backend='sqlite', expire_after=60 * 60
+        )
+
     def search_zoopla(self):
         logger.info('Searching Zoopla...')
 
@@ -115,7 +134,9 @@ class Searcher:
         }
 
         while True:
-            response = requests.get(property_listings_url, params=params)
+            response = self.session.get(property_listings_url, params=params)
+
+            logger.info(f'Loading page #{params["page_number"]}')
 
             try:
                 json = response.json()
@@ -214,6 +235,8 @@ def main():
         secrets = yaml.load(file)
 
     optimise(house, secrets, args.output)
+
+    cache.close()
 
 
 if __name__ == '__main__':

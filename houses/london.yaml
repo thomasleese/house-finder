@@ -1,7 +1,7 @@
 search:
   area: London
   type: rent
-  bedrooms: [1, 1]
+  bedrooms: [1, 2]
   price: [300, 350]
 
 places:
