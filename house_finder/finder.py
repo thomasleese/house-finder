@@ -61,16 +61,16 @@ def optimise(house, secrets, output):
 
     places = [Place(travel_time_calculator, gmaps, **c) for c in house['places']]
 
-    listings = list(searcher.search())
-    logger.info('Found %i listings.', len(listings))
+    properties = list(searcher.search())
+    logger.info('Found %i listings.', len(properties))
 
     properties = []
 
-    for i, listing in enumerate(listings):
-        property = Property(listing)
+    for i, property in enumerate(properties):
+        property = Property(property)
         property.apply_constraints(places)
         properties.append(property)
-        logger.info(f'#{i} -> {listing.address} : {property.score}')
+        logger.info(f'#{i} -> {property.address} : {property.score}')
 
     properties.sort(key=lambda property: property.score)
 
