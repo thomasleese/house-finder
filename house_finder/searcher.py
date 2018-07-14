@@ -1,12 +1,21 @@
-from collections import namedtuple
 import logging
+from typing import NamedTuple, Tuple
 
 import requests_cache
 
 logger = logging.getLogger(__name__)
 
-Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
-                                 'address', 'description', 'image'])
+
+class Listing(NamedTuple):
+    id: str
+    location: Tuple[float, float]
+    price: int
+    url: str
+    print_url: str
+    address: str
+    description: str
+    image: str
+
 
 class Searcher:
     """Search various property sites to find listings."""
