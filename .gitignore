@@ -66,3 +66,5 @@ target/
 /secrets.yaml
 
 outputs/*.pdf
+/cache.*
+/.DS_Store
