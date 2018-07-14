@@ -11,13 +11,14 @@ import tempfile
 import time
 import urllib.parse
 
-from cached_property import cached_property
 from geopy.distance import vincenty
 from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
 import requests_cache
 import yaml
+
+from .place import Place
 
 
 logging.basicConfig(level=logging.INFO)
@@ -29,64 +30,6 @@ Listing = namedtuple('Listing', ['id', 'location', 'price', 'url', 'print_url',
 
 
 cache = shelve.open('cache.db')
-
-
-class Place:
-
-    def __init__(self, gmaps, name, mode, arrival_time=None, departure_time=None):
-        self.gmaps = gmaps
-        self.name = name
-        self.mode = mode
-        self.arrival_time = arrival_time
-        self.departure_time = departure_time
-
-    @cached_property
-    def location(self):
-        geocode_results = self.gmaps.geocode(self.name)
-        location = geocode_results[0]['geometry']['location']
-        lat_long = (location['lat'], location['lng'])
-        logging.info(f'Loaded {self.name} as {lat_long}')
-        return lat_long
-
-    def format_time(self, string):
-        hour, minute = [int(x) for x in string.split(':')]
-        return int(datetime.datetime.utcnow().replace(hour=hour, minute=minute, second=0).timestamp())
-
-    def get_travel_time(self, location):
-        search_params = {
-            'origin': location,
-            'destination': self.name,
-            'mode': self.mode,
-            'traffic_model': 'pessimistic',
-        }
-
-        if self.arrival_time:
-            search_params['arrival_time'] = self.format_time(self.arrival_time)
-
-        if self.departure_time:
-            search_params['departure_time'] = self.format_time(self.departure_time)
-
-        cache_key = json.dumps(search_params, sort_keys=True)
-
-        if cache_key in cache:
-            return cache[cache_key]
-
-        results = self.gmaps.directions(**search_params)
-
-        try:
-            leg = results[0]['legs'][0]
-            duration = leg['duration']['value']
-        except (KeyError, IndexError):
-            duration = 1000
-
-        cache[cache_key] = duration
-        cache.sync()
-
-        return duration
-
-    def calculate(self, listing):
-        return self.get_travel_time(listing.location)
-
 
 class Property:
 
@@ -222,27 +165,3 @@ def optimise(house, secrets, output):
     properties = properties[:100]
 
     generate_output(output, properties, places)
-
-
-def main():
-    from argparse import ArgumentParser
-
-    parser = ArgumentParser()
-    parser.add_argument('house')
-    parser.add_argument('secrets')
-    parser.add_argument('output')
-    args = parser.parse_args()
-
-    with open(args.house) as file:
-        house = yaml.load(file)
-
-    with open(args.secrets) as file:
-        secrets = yaml.load(file)
-
-    optimise(house, secrets, args.output)
-
-    cache.close()
-
-
-if __name__ == '__main__':
-    main()
