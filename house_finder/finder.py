@@ -12,10 +12,10 @@ from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
 
-from .place import Place
 from .property import Property
 from .searcher import Searcher
 from .calculator import TravelTimeCalulator
+from .objectives import TravelTimeObjective
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,9 +57,13 @@ def generate_output(filename, properties, constraints):
 def optimise(house, secrets, output):
     gmaps = googlemaps.Client(key=secrets['google']['api_key'])
     travel_time_calculator = TravelTimeCalulator(secrets['google']['api_key'])
+
     searcher = Searcher(secrets, house['search']) # zoopler api
 
-    places = [Place(travel_time_calculator, gmaps, **c) for c in house['places']]
+    objectives = [
+        TravelTimeObjective.from_yaml(gmaps, travel_time_calculator, config)
+        for config in house['places']
+    ]
 
     properties = list(searcher.search())
     logger.info('Found %i listings.', len(properties))
@@ -68,7 +72,7 @@ def optimise(house, secrets, output):
 
     for i, property in enumerate(properties):
         property = Property(property)
-        property.apply_constraints(places)
+        property.apply_constraints(objectives)
         properties.append(property)
         logger.info(f'#{i} -> {property.address} : {property.score}')
 
@@ -76,4 +80,4 @@ def optimise(house, secrets, output):
 
     properties = properties[:100]
 
-    generate_output(output, properties, places)
+    generate_output(output, properties, objectives)
