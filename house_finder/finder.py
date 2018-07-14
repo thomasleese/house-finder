@@ -1,9 +1,6 @@
 import csv
-import datetime
-import json
 import logging
 import os
-import shelve
 import shutil
 import subprocess
 import tempfile
@@ -18,12 +15,10 @@ import requests
 from .place import Place
 from .property import Property
 from .searcher import Searcher
+from .calculator import TravelTimeCalulator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-cache = shelve.open('cache.db')
 
 
 def clean_url(url):
@@ -61,10 +56,10 @@ def generate_output(filename, properties, constraints):
 
 def optimise(house, secrets, output):
     gmaps = googlemaps.Client(key=secrets['google']['api_key'])
+    travel_time_calculator = TravelTimeCalulator(secrets['google']['api_key'])
+    searcher = Searcher(secrets, house['search']) # zoopler api
 
-    searcher = Searcher(secrets, house['search'])
-
-    places = [Place(gmaps, **c) for c in house['places']]
+    places = [Place(travel_time_calculator, gmaps, **c) for c in house['places']]
 
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))

@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 import yaml
 
 from .. import finder
-
+from .. import place
 
 def parse_arguments():
 
@@ -26,4 +26,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    finder.cache.close()
+    place.cache.close()
