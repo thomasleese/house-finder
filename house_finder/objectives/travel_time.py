@@ -20,6 +20,9 @@ class TravelTimeObjective(Objective):
         self.departure_time = departure_time
 
     def calculate(self, origin, destination):
+        if self.direction == Direction.to_listing:
+            origin, destination = destination, origin
+
         return self.travel_time_calculator(
             origin=origin,
             destination=destination,
