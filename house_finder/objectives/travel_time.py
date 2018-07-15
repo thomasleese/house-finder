@@ -26,7 +26,7 @@ class TravelTimeObjective:
 
     @staticmethod
     def from_yaml(maps, travel_time_calculator, config):
-        name = config['name']
+        name = config['params']['to']
 
         geocode_results = maps.geocode(name)
         location = geocode_results[0]['geometry']['location']
@@ -34,6 +34,6 @@ class TravelTimeObjective:
         logging.info(f'Loaded {name} as {lat_long}')
 
         return TravelTimeObjective(
-            travel_time_calculator, lat_long, config['mode'],
-            config.get('arrival_time'), config.get('departure_time')
+            travel_time_calculator, lat_long, config['params']['mode'],
+            config['params'].get('arrival_time'), config['params'].get('departure_time')
         )
