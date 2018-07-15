@@ -11,5 +11,6 @@ googlemaps = "*"
 "cached-property" = "*"
 "requests-cache" = "*"
 numpy = "*"
+matplotlib = "*"
 
 [dev-packages]
