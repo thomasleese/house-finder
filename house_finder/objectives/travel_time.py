@@ -16,7 +16,7 @@ class TravelTimeObjective(Objective):
 
     @staticmethod
     def from_dict(maps, travel_time_calculator, config):
-        if 'to_place_type' in config['params']:
+        if 'to_any' in config['params']:
             return MultipleTravelTimeObjective.from_dict(
                 maps, travel_time_calculator, config
             )
@@ -85,7 +85,7 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
     def from_dict(cls, maps, travel_time_calculator, config):
         return cls(
             config['name'], travel_time_calculator, maps,
-            config['params']['to_place_type'], config['params']['via'],
+            config['params']['to_any'], config['params']['via'],
             config['params'].get('arriving_at'),
             config['params'].get('leaving_at'),
         )
