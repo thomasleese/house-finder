@@ -1,7 +1,15 @@
 class Objective:
 
-    def __init__(self, name):
+    def __init__(self, name, maximum=None):
         self.name = name
+        self.maximum = maximum
+
+    @property
+    def constraint_function(self):
+        if self.maximum:
+            return lambda x: x < self.maximum
+        else:
+            return lambda x: True
 
     @staticmethod
     def from_dict(config, maps, travel_time_calculator):

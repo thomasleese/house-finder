@@ -74,7 +74,7 @@ def optimise(house, secrets, output):
 
     evaluated_listings = Evaluator(listings, objectives)
 
-    valid_evaluated_listings = [e for e in evaluated_listings if e.is_valid]
+    valid_evaluated_listings = [e for e in evaluated_listings if e.is_valid and e.satisfies_constaints]
 
     logger.info("It's Pareto time!")
 

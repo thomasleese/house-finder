@@ -1,6 +1,6 @@
 from collections import OrderedDict, UserList
 import logging
-from typing import Dict, NamedTuple
+from typing import Dict, NamedTuple, Callable
 
 from cached_property import cached_property
 import numpy as np
@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 class EvaluatedListing(NamedTuple):
     listing: Listing
-    scores: Dict[Objective, float]
+    scores: Dict[str, float]
+    constraints: Dict[str, Callable[[float], bool]]
 
     @property
     def total_score(self):
@@ -24,11 +25,18 @@ class EvaluatedListing(NamedTuple):
     def is_valid(self):
         return all(self.scores.values())
 
+    @property
+    def satisfies_constaints(self):
+        return all(f(self.scores[obj]) for obj, f in self.constraints.items())
+
 
 class Evaluator(UserList):
 
     def __init__(self, listings, objectives):
-        self.data = self.evaluated_listings(listings, objectives)
+        self.data = [
+            self.evaluate_listing(listing, objectives)
+            for listing in listings
+        ]
 
     def evaluate_listing(self, listing, objectives):
         logger.info(f'Evaluating {listing.address}')
@@ -38,15 +46,14 @@ class Evaluator(UserList):
             for objective in objectives
         ])
 
-        return EvaluatedListing(
-            listing, scores
-        )
+        constraints = {
+            objective.name: objective.constraint_function
+            for objective in objectives
+        }
 
-    def evaluated_listings(self, listings, objectives):
-        return [
-            self.evaluate_listing(listing, objectives)
-            for listing in listings
-        ]
+        return EvaluatedListing(
+            listing, scores, constraints
+        )
 
 
 class ParetoFront(UserList):

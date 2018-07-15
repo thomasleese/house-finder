@@ -12,8 +12,8 @@ class Direction(Enum):
 
 class TravelTimeObjective(Objective):
 
-    def __init__(self, name, travel_time_calculator, direction, mode, arrival_time=None, departure_time=None):
-        super().__init__(name)
+    def __init__(self, name, maximum, travel_time_calculator, direction, mode, arrival_time=None, departure_time=None):
+        super().__init__(name, maximum)
         self.travel_time_calculator = travel_time_calculator
         self.direction = direction
         self.mode = mode
@@ -50,8 +50,8 @@ class TravelTimeObjective(Objective):
 
 class SingleTravelTimeObjective(TravelTimeObjective):
 
-    def __init__(self, travel_time_calculator, name, location, direction, mode, arrival_time=None, departure_time=None):
-        super().__init__(name, travel_time_calculator, direction, mode, arrival_time, departure_time)
+    def __init__(self, travel_time_calculator, name, maximum, location, direction, mode, arrival_time=None, departure_time=None):
+        super().__init__(name, maximum, travel_time_calculator, direction, mode, arrival_time, departure_time)
         self.location = location
 
     def calculate(self, listing):
@@ -72,16 +72,17 @@ class SingleTravelTimeObjective(TravelTimeObjective):
         logging.info(f'Loaded {name} as {lat_long}')
 
         return cls(
-            travel_time_calculator, config['name'], lat_long, direction,
-            config['params']['via'], config['params'].get('arriving_at'),
+            travel_time_calculator, config['name'], config.get('maximum'),
+            lat_long, direction, config['params']['via'],
+            config['params'].get('arriving_at'),
             config['params'].get('leaving_at')
         )
 
 
 class MultipleTravelTimeObjective(TravelTimeObjective):
 
-    def __init__(self, name, travel_time_calculator, maps, place_type, direction, mode, arrival_time=None, departure_time=None):
-        super().__init__(name, travel_time_calculator, direction, mode, arrival_time, departure_time)
+    def __init__(self, name, maximum, travel_time_calculator, maps, place_type, direction, mode, arrival_time=None, departure_time=None):
+        super().__init__(name, maximum, travel_time_calculator, direction, mode, arrival_time, departure_time)
         self.maps = maps
         self.place_type = place_type
 
@@ -107,7 +108,7 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
             direction = Direction.to_listing
 
         return cls(
-            config['name'], travel_time_calculator, maps,
+            config['name'], config.get('maximum'), travel_time_calculator, maps,
             name, direction, config['params']['via'],
             config['params'].get('arriving_at'),
             config['params'].get('leaving_at'),
