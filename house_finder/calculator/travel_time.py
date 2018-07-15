@@ -41,13 +41,12 @@ class TravelTimeCalulator:
 
         return duration
 
-    def _extract_duration(self, result):
+    def _extract_duration(self, results):
         try:
             leg = results[0]['legs'][0]
             return leg['duration']['value']
         except (KeyError, IndexError):
             return 1000
-
 
     def _create_search_params(self, origin, destination, mode, arrival_time, departure_time):
         params = {
