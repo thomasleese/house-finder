@@ -12,17 +12,14 @@ class TravelTimeObjective:
         self.arrival_time = arrival_time
         self.departure_time = departure_time
 
-    def get_travel_time(self, location):
+    def calculate(self, listing):
         return self.travel_time_calculator(
             origin=self.location,
-            destination=location,
+            destination=listing.location,
             mode=self.mode,
             arrival_time=self.arrival_time,
             departure_time=self.departure_time
         )
-
-    def calculate(self, listing):
-        return self.get_travel_time(listing.location)
 
     @staticmethod
     def from_yaml(maps, travel_time_calculator, config):
