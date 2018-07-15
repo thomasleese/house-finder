@@ -4,13 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-
 geopy = "*"
 pyyaml = "*"
 requests = "*"
 googlemaps = "*"
 "cached-property" = "*"
 "requests-cache" = "*"
-
+numpy = "*"
 
 [dev-packages]
