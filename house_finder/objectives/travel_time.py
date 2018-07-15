@@ -56,10 +56,10 @@ class SingleTravelTimeObjective(TravelTimeObjective):
     def from_dict(cls, maps, travel_time_calculator, config):
         if 'to' in config['params']:
             name = config['params']['to']
-            direction = Direction.to_listing
+            direction = Direction.from_listing
         else:
             name = config['params']['from']
-            direction = Direction.from_listing
+            direction = Direction.to_listing
 
         geocode_results = maps.geocode(name)
         location = geocode_results[0]['geometry']['location']
@@ -75,8 +75,8 @@ class SingleTravelTimeObjective(TravelTimeObjective):
 
 class MultipleTravelTimeObjective(TravelTimeObjective):
 
-    def __init__(self, name, travel_time_calculator, maps, place_type, mode, arrival_time=None, departure_time=None):
-        super().__init__(name, travel_time_calculator, Direction.from_listing, mode, arrival_time, departure_time)
+    def __init__(self, name, travel_time_calculator, maps, place_type, direction, mode, arrival_time=None, departure_time=None):
+        super().__init__(name, travel_time_calculator, direction, mode, arrival_time, departure_time)
         self.maps = maps
         self.place_type = place_type
 
@@ -93,9 +93,17 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
 
     @classmethod
     def from_dict(cls, maps, travel_time_calculator, config):
+
+        if 'to_any' in config['params']:
+            name = config['params']['to_any']
+            direction = Direction.from_listing
+        else:
+            name = config['params']['from_any']
+            direction = Direction.to_listing
+
         return cls(
             config['name'], travel_time_calculator, maps,
-            config['params']['to_any'], config['params']['via'],
+            name, direction, config['params']['via'],
             config['params'].get('arriving_at'),
             config['params'].get('leaving_at'),
         )
