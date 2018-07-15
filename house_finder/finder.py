@@ -15,7 +15,7 @@ import requests
 from .property import Property
 from .searcher import Searcher
 from .calculator import TravelTimeCalulator
-from .objectives import TravelTimeObjective
+from .objectives import Objective
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def optimise(house, secrets, output):
     searcher = Searcher(secrets, house['search']) # zoopler api
 
     objectives = [
-        TravelTimeObjective.from_yaml(gmaps, travel_time_calculator, config)
+        Objective.from_dict(config, gmaps, travel_time_calculator)
         for config in house['objectives']
     ]
 

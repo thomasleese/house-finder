@@ -22,7 +22,7 @@ class TravelTimeObjective:
         )
 
     @staticmethod
-    def from_yaml(maps, travel_time_calculator, config):
+    def from_dict(maps, travel_time_calculator, config):
         name = config['params']['to']
 
         geocode_results = maps.geocode(name)
