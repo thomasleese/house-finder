@@ -1,13 +1,14 @@
+from .objective import Objective
 
 
-class RentObjective:
+class RentObjective(Objective):
 
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        super().__init__(name)
 
     def calculate(self, listing):
         return listing.price
 
     @classmethod
     def from_dict(cls, config):
-        return cls()
+        return cls(config['name'])
