@@ -20,16 +20,15 @@ class Listing(NamedTuple):
 class Searcher:
     """Search various property sites to find listings."""
 
-    def __init__(self, secrets, query):
+    def __init__(self, cache, secrets, query):
+        self.cache = cache
         self.secrets = secrets
         self.query = query
 
-        self.session = requests_cache.CachedSession(
-            backend='sqlite', expire_after=60 * 60
-        )
-
     def search_zoopla(self):
         logger.info('Searching Zoopla...')
+
+        session = self.cache.requests_session
 
         property_listings_url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
         params = {
@@ -48,7 +47,7 @@ class Searcher:
         }
 
         while True:
-            response = self.session.get(property_listings_url, params=params)
+            response = session.get(property_listings_url, params=params)
 
             logger.info(f'Loading page #{params["page_number"]}')
 

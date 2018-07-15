@@ -12,6 +12,7 @@ from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
 
+from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
 from .calculator import TravelTimeCalulator
 from .searcher import Searcher
@@ -57,10 +58,12 @@ logger = logging.getLogger(__name__)
 
 
 def optimise(house, secrets, output):
-    gmaps = googlemaps.Client(key=secrets['google']['api_key'])
-    travel_time_calculator = TravelTimeCalulator(secrets['google']['api_key'])
+    cache = Cache()
 
-    searcher = Searcher(secrets, house['search']) # zoopler api
+    gmaps = googlemaps.Client(key=secrets['google']['api_key'])
+    travel_time_calculator = TravelTimeCalulator(cache, secrets['google']['api_key'])
+
+    searcher = Searcher(cache, secrets, house['search']) # zoopler api
 
     objectives = [
         Objective.from_dict(config, gmaps, travel_time_calculator)
@@ -70,7 +73,7 @@ def optimise(house, secrets, output):
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))
 
-    listings = listings[:150]
+    listings = listings[:500]
 
     evaluated_listings = Evaluator(listings, objectives)
 

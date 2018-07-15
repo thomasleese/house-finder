@@ -1,6 +1,5 @@
 import datetime
 import json
-import shelve
 
 import googlemaps
 
@@ -10,16 +9,13 @@ class NoTravelTimeError(Exception):
 
 class TravelTimeCalulator:
 
-    def __init__(self, api_key):
-        self.cache = shelve.open('travel_times.db')
+    def __init__(self, cache, api_key):
+        self.cache = cache
         self.maps = googlemaps.Client(key=api_key)
 
     def __call__(self, **kwargs):
         params = self._create_search_params(**kwargs)
         return self.calculate_time(**params)
-
-    def __del__(self):
-        self.cache.close()
 
     def _format_time(self, string):
         hour, minute = [int(x) for x in string.split(':')]
@@ -30,17 +26,14 @@ class TravelTimeCalulator:
         )
 
     def calculate_time(self, **params):
-        cache_key = json.dumps(params, sort_keys=True)
-
-        if cache_key in self.cache:
-            duration = self.cache[cache_key]
+        if params in self.cache.data:
+            duration = self.cache.data[params]
         else:
             duration = self._extract_duration(
                 self.maps.directions(**params)
             )
 
-            self.cache[cache_key] = duration
-            self.cache.sync()
+            self.cache.data[params] = duration
 
         return duration
 
