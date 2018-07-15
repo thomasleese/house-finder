@@ -3,15 +3,16 @@ import json
 
 import googlemaps
 
+
 class NoTravelTimeError(Exception):
     pass
 
 
 class TravelTimeCalulator:
 
-    def __init__(self, cache, api_key):
+    def __init__(self, gmaps, cache):
+        self.gmaps = gmaps
         self.cache = cache
-        self.maps = googlemaps.Client(key=api_key)
 
     def __call__(self, **kwargs):
         params = self._create_search_params(**kwargs)
@@ -30,7 +31,7 @@ class TravelTimeCalulator:
             duration = self.cache.data[params]
         else:
             duration = self._extract_duration(
-                self.maps.directions(**params)
+                self.gmaps.directions(**params)
             )
 
             self.cache.data[params] = duration
@@ -60,3 +61,11 @@ class TravelTimeCalulator:
             params['traffic_model'] = 'pessimistic'
 
         return params
+
+
+class Maps:
+
+    def __init__(self, api_key, cache):
+        self.gmaps = gmaps = googlemaps.Client(key=api_key)
+
+        self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)

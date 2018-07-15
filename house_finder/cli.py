@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 import yaml
 
-from .. import finder
+from . import finder
 
 
 def parse_arguments():
@@ -23,7 +23,3 @@ def load_yaml(file_path):
 def main():
     input, secrets, output = parse_arguments()
     finder.optimise(input, secrets, output)
-
-
-if __name__ == "__main__":
-    main()

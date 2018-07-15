@@ -1,23 +1,16 @@
-import csv
 import logging
 import os
-import shutil
 import subprocess
-import tempfile
 import time
 import urllib.parse
 
-from geopy.distance import vincenty
-from geopy.geocoders import GoogleV3
-import googlemaps
-import requests
-
 from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
-from .calculator import TravelTimeCalulator
+from .maps import Maps
 from .searcher import Searcher
 from .objectives import Objective
 from .plot import objective_plotter
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,15 +52,12 @@ logger = logging.getLogger(__name__)
 
 def optimise(house, secrets, output):
     cache = Cache()
-
-    gmaps = googlemaps.Client(key=secrets['google']['api_key'])
-    travel_time_calculator = TravelTimeCalulator(cache, secrets['google']['api_key'])
+    maps = Maps(secrets['google']['api_key'], cache)
 
     searcher = Searcher(cache, secrets, house['search']) # zoopler api
 
     objectives = [
-        Objective.from_dict(config, gmaps, travel_time_calculator)
-        for config in house['objectives']
+        Objective.from_dict(config, maps) for config in house['objectives']
     ]
 
     listings = list(searcher.search())
