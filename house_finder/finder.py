@@ -70,7 +70,7 @@ def optimise(house, secrets, output):
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))
 
-    listings = listings[:500]
+    listings = listings[:50]
 
     evaluated_listings = Evaluator(listings, objectives)
 

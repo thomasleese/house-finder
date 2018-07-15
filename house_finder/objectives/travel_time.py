@@ -65,7 +65,21 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
         self.place_type = place_type
 
     def calculate(self, listing):
-        return 0
+        results = self.maps.places_nearby(
+            location=listing.location, type=self.place_type, rank_by='distance',
+            keyword=self.place_type,
+        )
+
+        first_result = results['results'][0]
+        location = first_result['geometry']['location']['lat'], first_result['geometry']['location']['lng']
+
+        return self.travel_time_calculator(
+            origin=listing.location,
+            destination=location,
+            mode=self.mode,
+            arrival_time=self.arrival_time,
+            departure_time=self.departure_time
+        )
 
     @classmethod
     def from_dict(cls, maps, travel_time_calculator, config):

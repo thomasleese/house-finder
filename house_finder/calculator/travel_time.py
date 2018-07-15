@@ -53,13 +53,14 @@ class TravelTimeCalulator:
             'origin': origin,
             'destination': destination,
             'mode': mode,
-            'traffic_model': 'pessimistic',
         }
 
         if arrival_time:
             params['arrival_time'] = self._format_time(arrival_time)
+            params['traffic_model'] = 'pessimistic'
 
         if departure_time:
             params['departure_time'] = self._format_time(departure_time)
+            params['traffic_model'] = 'pessimistic'
 
         return params
