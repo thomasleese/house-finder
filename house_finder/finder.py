@@ -12,46 +12,48 @@ from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
 
-from .evaluator import Evaluator
+from .evaluator import Evaluator, ParetoFront
 from .calculator import TravelTimeCalulator
 from .searcher import Searcher
 from .objectives import Objective
+from .plot import objective_plotter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def clean_url(url):
-    o = urllib.parse.urlparse(url)
-    return o.scheme + '://' + o.netloc + o.path
-
-
-def generate_property_pdf(property):
-    filename = 'outputs/{}.pdf'.format(property.listing.id)
-
-    if not os.path.exists(filename):
-        args = ['wkhtmltopdf',
-                '--footer-center', clean_url(property.listing.url),
-                '-q',
-                property.listing.print_url,
-                filename]
-
-        try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
-            if not os.path.exists(filename):
-                raise
-
-    return filename
-
-def generate_output(filename, properties, constraints):
-    filenames = []
-
-    for i, property in enumerate(properties):
-        logger.info(f'#{i} -> {property.listing.address} : {property.listing.url}')
-        filenames.append(generate_property_pdf(property))
-
-    subprocess.check_call(['pdfunite'] + filenames + [filename])
+# def clean_url(url):
+#     o = urllib.parse.urlparse(url)
+#     return o.scheme + '://' + o.netloc + o.path
+#
+#
+# def generate_property_pdf(property):
+#     filename = 'outputs/{}.pdf'.format(property.listing.id)
+#
+#     if not os.path.exists(filename):
+#         args = ['wkhtmltopdf',
+#                 '--footer-center', clean_url(property.listing.url),
+#                 '-q',
+#                 property.listing.print_url,
+#                 filename]
+#
+#         try:
+#             subprocess.check_call(args)
+#         except subprocess.CalledProcessError:
+#             if not os.path.exists(filename):
+#                 raise
+#
+#     return filename
+#
+#
+# def generate_output(filename, properties, constraints):
+#     filenames = []
+#
+#     for i, property in enumerate(properties):
+#         logger.info(f'#{i} -> {property.listing.address} : {property.listing.url}')
+#         filenames.append(generate_property_pdf(property))
+#
+#     subprocess.check_call(['pdfunite'] + filenames + [filename])
 
 
 def optimise(house, secrets, output):
@@ -68,8 +70,14 @@ def optimise(house, secrets, output):
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))
 
-    evaluated_listings = Evaluator(listings, objectives)
-    evaluated_listings.sort(key=lambda evaluated_listing: evaluated_listings.total_score)
-    evaluated_listings = evaluated_listings[:100]
+    listings = listings[:50]
 
-    generate_output(output, evaluated_listings, objectives)
+    evaluated_listings = Evaluator(listings, objectives)
+
+    logger.info("It's Pareto time!")
+
+    pareto_front = ParetoFront(evaluated_listings)
+
+    objective_plotter(pareto_front, objectives[-1].name, objectives[2].name)
+
+    # generate_output(output, pareto_front, objectives)
