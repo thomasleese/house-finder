@@ -62,7 +62,7 @@ def optimise(house, secrets, output):
 
     objectives = [
         TravelTimeObjective.from_yaml(gmaps, travel_time_calculator, config)
-        for config in house['places']
+        for config in house['objectives']
     ]
 
     properties = list(searcher.search())
