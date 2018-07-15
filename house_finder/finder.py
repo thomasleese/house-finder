@@ -12,9 +12,9 @@ from geopy.geocoders import GoogleV3
 import googlemaps
 import requests
 
-from .property import Property
-from .searcher import Searcher
+from .evaluator import Evaluator
 from .calculator import TravelTimeCalulator
+from .searcher import Searcher
 from .objectives import Objective
 
 logging.basicConfig(level=logging.INFO)
@@ -65,19 +65,11 @@ def optimise(house, secrets, output):
         for config in house['objectives']
     ]
 
-    properties = list(searcher.search())
-    logger.info('Found %i listings.', len(properties))
+    listings = list(searcher.search())
+    logger.info('Found %i listings.', len(listings))
 
-    properties = []
+    evaluated_listings = Evaluator(listings, objectives)
+    evaluated_listings.sort(key=lambda evaluated_listing: evaluated_listings.total_score)
+    evaluated_listings = evaluated_listings[:100]
 
-    for i, property in enumerate(properties):
-        property = Property(property)
-        property.apply_constraints(objectives)
-        properties.append(property)
-        logger.info(f'#{i} -> {property.address} : {property.score}')
-
-    properties.sort(key=lambda property: property.score)
-
-    properties = properties[:100]
-
-    generate_output(output, properties, objectives)
+    generate_output(output, evaluated_listings, objectives)
