@@ -7,6 +7,13 @@ from .objective import Objective
 
 class TravelTimeObjective(Objective):
 
+    @staticmethod
+    def from_dict(maps, travel_time_calculator, config):
+        return SingleTravelTimeObjective.from_dict(maps, travel_time_calculator, config)
+
+
+class SingleTravelTimeObjective(TravelTimeObjective):
+
     def __init__(self, travel_time_calculator, name, location, mode, arrival_time=None, departure_time=None):
         super().__init__(name)
         self.travel_time_calculator = travel_time_calculator
@@ -24,8 +31,8 @@ class TravelTimeObjective(Objective):
             departure_time=self.departure_time
         )
 
-    @staticmethod
-    def from_dict(maps, travel_time_calculator, config):
+    @classmethod
+    def from_dict(cls, maps, travel_time_calculator, config):
         name = config['params']['to']
 
         geocode_results = maps.geocode(name)
@@ -33,7 +40,7 @@ class TravelTimeObjective(Objective):
         lat_long = (location['lat'], location['lng'])
         logging.info(f'Loaded {name} as {lat_long}')
 
-        return TravelTimeObjective(
+        return cls(
             travel_time_calculator, config['name'], lat_long,
             config['params']['via'], config['params'].get('arriving_at'),
             config['params'].get('leaving_at')
