@@ -34,6 +34,6 @@ class TravelTimeObjective:
         logging.info(f'Loaded {name} as {lat_long}')
 
         return TravelTimeObjective(
-            travel_time_calculator, lat_long, config['params']['mode'],
-            config['params'].get('arrival_time'), config['params'].get('departure_time')
+            travel_time_calculator, lat_long, config['params']['via'],
+            config['params'].get('arriving_at'), config['params'].get('leaving_at')
         )
