@@ -14,6 +14,15 @@ class TravelTimeObjective(Objective):
         self.arrival_time = arrival_time
         self.departure_time = departure_time
 
+    def calculate(self, origin, destination):
+        return self.travel_time_calculator(
+            origin=origin,
+            destination=destination,
+            mode=self.mode,
+            arrival_time=self.arrival_time,
+            departure_time=self.departure_time
+        )
+
     @staticmethod
     def from_dict(maps, travel_time_calculator, config):
         if 'to_any' in config['params']:
@@ -33,13 +42,7 @@ class SingleTravelTimeObjective(TravelTimeObjective):
         self.location = location
 
     def calculate(self, listing):
-        return self.travel_time_calculator(
-            origin=self.location,
-            destination=listing.location,
-            mode=self.mode,
-            arrival_time=self.arrival_time,
-            departure_time=self.departure_time
-        )
+        return super().calculate(listing.location, self.location)
 
     @classmethod
     def from_dict(cls, maps, travel_time_calculator, config):
@@ -73,13 +76,7 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
         first_result = results['results'][0]
         location = first_result['geometry']['location']['lat'], first_result['geometry']['location']['lng']
 
-        return self.travel_time_calculator(
-            origin=listing.location,
-            destination=location,
-            mode=self.mode,
-            arrival_time=self.arrival_time,
-            departure_time=self.departure_time
-        )
+        return super().calculate(listing.location, location)
 
     @classmethod
     def from_dict(cls, maps, travel_time_calculator, config):
