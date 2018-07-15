@@ -1,11 +1,15 @@
 from collections import UserList
+import logging
 from typing import Dict, NamedTuple
 
 from .objectives import Objective
 from .searcher import Listing
 
 
-class EvaluatedListing:
+logger = logging.getLogger(__name__)
+
+
+class EvaluatedListing(NamedTuple):
     listing: Listing
     scores: Dict[Objective, float]
 
@@ -23,8 +27,10 @@ class Evaluator(UserList):
         ]
 
     def evaluate_listing(self, listing, objectives):
+        logger.info(f'Evaluating {listing.address}')
+
         scores = {
-            objective: objective.calculate(listing)
+            objective.name: objective.calculate(listing)
             for objective in objectives
         }
 
