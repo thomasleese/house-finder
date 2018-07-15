@@ -18,16 +18,17 @@ class EvaluatedListing(NamedTuple):
 
     @property
     def total_score(self):
-        return sum(scores.values())
+        return sum(self.scores.values())
+
+    @property
+    def is_valid(self):
+        return all(self.scores.values())
 
 
 class Evaluator(UserList):
 
     def __init__(self, listings, objectives):
-        self.data = [
-            self.evaluate_listing(listing, objectives)
-            for listing in listings
-        ]
+        self.data = self.evaluated_listings(listings, objectives)
 
     def evaluate_listing(self, listing, objectives):
         logger.info(f'Evaluating {listing.address}')
@@ -40,6 +41,12 @@ class Evaluator(UserList):
         return EvaluatedListing(
             listing, scores
         )
+
+    def evaluated_listings(self, listings, objectives):
+        return [
+            self.evaluate_listing(listing, objectives)
+            for listing in listings
+        ]
 
 
 class ParetoFront(UserList):

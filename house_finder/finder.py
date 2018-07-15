@@ -70,13 +70,15 @@ def optimise(house, secrets, output):
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))
 
-    listings = listings[:10]
+    listings = listings[:50]
 
     evaluated_listings = Evaluator(listings, objectives)
 
+    valid_evaluated_listings = [e for e in evaluated_listings if e.is_valid]
+
     logger.info("It's Pareto time!")
 
-    pareto_front = ParetoFront(evaluated_listings)
+    pareto_front = ParetoFront(valid_evaluated_listings)
 
     objective_plotter(pareto_front, objectives[-1].name, objectives[2].name)
 

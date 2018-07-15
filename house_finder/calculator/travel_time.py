@@ -4,6 +4,9 @@ import shelve
 
 import googlemaps
 
+class NoTravelTimeError(Exception):
+    pass
+
 
 class TravelTimeCalulator:
 
@@ -46,7 +49,7 @@ class TravelTimeCalulator:
             leg = results[0]['legs'][0]
             return leg['duration']['value']
         except (KeyError, IndexError):
-            return 1000
+            raise NoTravelTimeError()
 
     def _create_search_params(self, origin, destination, mode, arrival_time, departure_time):
         params = {

@@ -1,1 +1,1 @@
-from .travel_time import TravelTimeCalulator
+from .travel_time import TravelTimeCalulator, NoTravelTimeError

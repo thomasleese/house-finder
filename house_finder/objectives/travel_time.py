@@ -4,6 +4,7 @@ import json
 import logging
 
 from .objective import Objective
+from ..calculator import NoTravelTimeError
 
 class Direction(Enum):
     to_listing = 'to'
@@ -23,13 +24,17 @@ class TravelTimeObjective(Objective):
         if self.direction == Direction.to_listing:
             origin, destination = destination, origin
 
-        return self.travel_time_calculator(
-            origin=origin,
-            destination=destination,
-            mode=self.mode,
-            arrival_time=self.arrival_time,
-            departure_time=self.departure_time
-        )
+        try:
+            return self.travel_time_calculator(
+                origin=origin,
+                destination=destination,
+                mode=self.mode,
+                arrival_time=self.arrival_time,
+                departure_time=self.departure_time
+            )
+        except NoTravelTimeError:
+            return None
+
 
     @staticmethod
     def from_dict(maps, travel_time_calculator, config):
