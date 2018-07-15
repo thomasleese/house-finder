@@ -67,5 +67,6 @@ target/
 
 outputs/*.pdf
 /cache.*
+/travel_times.db
 /.DS_Store
 /houses
