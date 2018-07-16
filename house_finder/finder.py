@@ -73,6 +73,8 @@ def optimise(house, secrets, output):
 
     pareto_front = ParetoFront(valid_evaluated_listings)
 
+    logger.info(f'Filtered down to {len(pareto_front)} listings')
+
     objective_plotter(pareto_front, objectives[-1].name, objectives[2].name)
 
     # generate_output(output, pareto_front, objectives)
