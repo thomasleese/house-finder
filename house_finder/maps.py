@@ -99,7 +99,12 @@ class NearbyPlacesFinder:
     def __call__(self, location, place_type):
         place_type = place_type.strip()
 
-        cache_key = {'nearby_place_finder': {'location': location, 'place_type': place_type}}
+        cache_key = {
+            'nearby_place_finder': {
+                'location': location, 'place_type': place_type
+            }
+        }
+
         if cache_key in self.cache.data:
             return self.cache.data[cache_key]
 
@@ -119,7 +124,7 @@ class NearbyPlacesFinder:
 class Maps:
 
     def __init__(self, api_key, cache):
-        self.gmaps = gmaps = googlemaps.Client(key=api_key)
+        gmaps = googlemaps.Client(key=api_key)
 
         self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
         self.find_latitude_longiture = LatitudeLongitudeFinder(gmaps, cache)
