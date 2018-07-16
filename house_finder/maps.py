@@ -89,6 +89,33 @@ class LatitudeLongitudeFinder:
         self.cache.data[cache_key] = lat_long
         return lat_long
 
+
+class NearbyPlacesFinder:
+
+    def __init__(self, gmaps, cache):
+        self.gmaps = gmaps
+        self.cache = cache
+
+    def __call__(self, location, place_type):
+        place_type = place_type.strip()
+
+        cache_key = {'nearby_place_finder': {'location': location, 'place_type': place_type}}
+        if cache_key in self.cache.data:
+            return self.cache.data[cache_key]
+
+        results = self.gmaps.places_nearby(
+            location=location, type=place_type, rank_by='distance',
+            keyword=place_type,
+        )
+
+        results = results['results']
+
+        logger.info(f'Finding nearby {place_type} places to {location}')
+
+        self.cache.data[cache_key] = results
+        return results
+
+
 class Maps:
 
     def __init__(self, api_key, cache):
@@ -96,3 +123,4 @@ class Maps:
 
         self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
         self.find_latitude_longiture = LatitudeLongitudeFinder(gmaps, cache)
+        self.find_nearby_places = NearbyPlacesFinder(gmaps, cache)

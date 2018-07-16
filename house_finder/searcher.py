@@ -49,7 +49,7 @@ class Searcher:
         while True:
             response = session.get(property_listings_url, params=params)
 
-            logger.info(f'Loading page #{params["page_number"]}')
+            logger.debug(f'Loading page #{params["page_number"]}')
 
             try:
                 json = response.json()
