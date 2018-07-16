@@ -1,7 +1,11 @@
 import datetime
 import json
+import logging
 
 import googlemaps
+
+
+logger = logging.getLogger(__name__)
 
 
 class NoTravelTimeError(Exception):
@@ -63,9 +67,32 @@ class TravelTimeCalulator:
         return params
 
 
+class LatitudeLongitudeFinder:
+
+    def __init__(self, gmaps, cache):
+        self.gmaps = gmaps
+        self.cache = cache
+
+    def __call__(self, query):
+        query = query.strip()
+
+        cache_key = {'latitude_longitude': query}
+        if cache_key in self.cache.data:
+            return self.cache.data[cache_key]
+
+        results = self.gmaps.geocode(query)
+        location = results[0]['geometry']['location']
+        lat_long = (location['lat'], location['lng'])
+
+        logger.info(f'Loaded {query} as {lat_long}')
+
+        self.cache.data[cache_key] = lat_long
+        return lat_long
+
 class Maps:
 
     def __init__(self, api_key, cache):
         self.gmaps = gmaps = googlemaps.Client(key=api_key)
 
         self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
+        self.find_latitude_longiture = LatitudeLongitudeFinder(gmaps, cache)

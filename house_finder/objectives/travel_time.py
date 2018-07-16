@@ -64,10 +64,7 @@ class SingleTravelTimeObjective(TravelTimeObjective):
             name = config['params']['from']
             direction = Direction.to_listing
 
-        geocode_results = maps.gmaps.geocode(name)
-        location = geocode_results[0]['geometry']['location']
-        lat_long = (location['lat'], location['lng'])
-        logging.info(f'Loaded {name} as {lat_long}')
+        lat_long = maps.find_latitude_longiture(name)
 
         return cls(
             config['name'], config.get('maximum'), maps,
