@@ -63,11 +63,11 @@ def optimise(house, secrets, output):
     listings = list(searcher.search())
     logger.info('Found %i listings.', len(listings))
 
-    listings = listings[:500]
-
     evaluated_listings = Evaluator(listings, objectives)
 
-    valid_evaluated_listings = [e for e in evaluated_listings if e.is_valid and e.satisfies_constaints]
+    valid_evaluated_listings = [
+        e for e in evaluated_listings if e.is_valid and e.satisfies_constaints
+    ]
 
     logger.info("It's Pareto time!")
 
