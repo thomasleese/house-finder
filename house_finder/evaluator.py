@@ -4,6 +4,7 @@ from typing import Dict, NamedTuple, Callable
 
 from cached_property import cached_property
 import numpy as np
+import progressbar
 
 from .objectives import Objective
 from .searcher import Listing
@@ -35,11 +36,11 @@ class Evaluator(UserList):
     def __init__(self, listings, objectives):
         self.data = [
             self.evaluate_listing(listing, objectives)
-            for listing in listings
+            for listing in progressbar.progressbar(listings)
         ]
 
     def evaluate_listing(self, listing, objectives):
-        logger.info(f'Evaluating {listing.address}')
+        logger.debug(f'Evaluating {listing.address}')
 
         scores = OrderedDict([
             (objective.name, objective.calculate(listing))

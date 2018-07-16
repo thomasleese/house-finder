@@ -84,7 +84,7 @@ class LatitudeLongitudeFinder:
         location = results[0]['geometry']['location']
         lat_long = (location['lat'], location['lng'])
 
-        logger.info(f'Loaded {query} as {lat_long}')
+        logger.debug(f'Loaded {query} as {lat_long}')
 
         self.cache.data[cache_key] = lat_long
         return lat_long
@@ -115,7 +115,7 @@ class NearbyPlacesFinder:
 
         results = results['results']
 
-        logger.info(f'Finding nearby {place_type} places to {location}')
+        logger.debug(f'Finding nearby {place_type} places to {location}')
 
         self.cache.data[cache_key] = results
         return results

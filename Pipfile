@@ -12,5 +12,6 @@ googlemaps = "*"
 "requests-cache" = "*"
 numpy = "*"
 matplotlib = "*"
+"progressbar2" = "*"
 
 [dev-packages]
