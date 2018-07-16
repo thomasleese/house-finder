@@ -83,7 +83,11 @@ class MultipleTravelTimeObjective(TravelTimeObjective):
     def calculate(self, listing):
         nearby_places = self.maps.find_nearby_places(listing.location, self.place_type)
 
-        closest_place = nearby_places[0]
+        try:
+            closest_place = nearby_places[0]
+        except IndexError:
+            return None
+
         location = closest_place['geometry']['location']['lat'], closest_place['geometry']['location']['lng']
 
         return super().calculate(listing.location, location)
