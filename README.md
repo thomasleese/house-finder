@@ -11,5 +11,5 @@ $ pipenv install
 ## Running
 
 ```bash
-$ pipenv run python finder.py
+$ pipenv run python -m house_finder -i houses/london.yaml -s secrets.yaml -o london.pdf
 ```
