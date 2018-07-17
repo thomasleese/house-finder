@@ -1,8 +1,18 @@
 from argparse import ArgumentParser
+import logging
 
 import yaml
 
-from . import finder
+from .cache import Cache
+from .evaluator import Evaluator, ParetoFront
+from .maps import Maps
+from .searcher import Searcher
+from .objectives import Objective
+from .outputs import output_html, output_plot
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
@@ -22,4 +32,32 @@ def load_yaml(file_path):
 
 def main():
     input, secrets, output = parse_arguments()
-    finder.optimise(input, secrets, output)
+
+    cache = Cache()
+    maps = Maps(secrets['google']['api_key'], cache)
+
+    searcher = Searcher(cache, secrets, input['search']) # zoopler api
+
+    objectives = [
+        Objective.from_dict(config, maps) for config in input['objectives']
+    ]
+
+    listings = list(searcher.search())
+    logger.info('Found %i listings.', len(listings))
+
+    # listings = listings[:1000]
+
+    evaluated_listings = Evaluator(listings, objectives)
+
+    valid_evaluated_listings = [
+        e for e in evaluated_listings if e.is_valid and e.satisfies_constaints
+    ]
+
+    logger.info("It's Pareto time!")
+
+    pareto_front = ParetoFront(valid_evaluated_listings)
+
+    logger.info(f'Filtered down to {len(pareto_front)} listings')
+
+    output_html(pareto_front, objectives, output)
+    # output_plot(pareto_front, objectives)
