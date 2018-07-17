@@ -4,7 +4,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
-def objective_plotter(evaluated_listings, objectives):
+def output_plot(evaluated_listings, objectives):
     nrows = ncols = len(objectives)
     index = 0
 

@@ -5,8 +5,7 @@ from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
 from .searcher import Searcher
 from .objectives import Objective
-from .output import output_html
-from .output.plot import objective_plotter
+from .output import output_html, output_plot
 
 
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +37,5 @@ def optimise(house, secrets, output):
 
     logger.info(f'Filtered down to {len(pareto_front)} listings')
 
-    # objective_plotter(pareto_front, objectives)
-
     output_html(pareto_front, objectives, output)
+    # output_plot(pareto_front, objectives)
