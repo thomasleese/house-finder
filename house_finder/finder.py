@@ -1,8 +1,4 @@
 import logging
-import os
-import subprocess
-import time
-import urllib.parse
 
 from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
@@ -15,40 +11,6 @@ from .output.plot import objective_plotter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# def clean_url(url):
-#     o = urllib.parse.urlparse(url)
-#     return o.scheme + '://' + o.netloc + o.path
-#
-#
-# def generate_property_pdf(property):
-#     filename = 'outputs/{}.pdf'.format(property.listing.id)
-#
-#     if not os.path.exists(filename):
-#         args = ['wkhtmltopdf',
-#                 '--footer-center', clean_url(property.listing.url),
-#                 '-q',
-#                 property.listing.print_url,
-#                 filename]
-#
-#         try:
-#             subprocess.check_call(args)
-#         except subprocess.CalledProcessError:
-#             if not os.path.exists(filename):
-#                 raise
-#
-#     return filename
-#
-#
-# def generate_output(filename, properties, constraints):
-#     filenames = []
-#
-#     for i, property in enumerate(properties):
-#         logger.info(f'#{i} -> {property.listing.address} : {property.listing.url}')
-#         filenames.append(generate_property_pdf(property))
-#
-#     subprocess.check_call(['pdfunite'] + filenames + [filename])
 
 
 def optimise(house, secrets, output):
@@ -79,5 +41,3 @@ def optimise(house, secrets, output):
     # objective_plotter(pareto_front, objectives)
 
     output_html(pareto_front, objectives, output)
-
-    # generate_output(output, pareto_front, objectives)
