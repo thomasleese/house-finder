@@ -9,7 +9,7 @@ from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
 from .searcher import Searcher
 from .objectives import Objective
-from .plot import objective_plotter
+from .output.plot import objective_plotter
 
 
 logging.basicConfig(level=logging.INFO)
