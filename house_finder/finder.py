@@ -5,7 +5,7 @@ from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
 from .searcher import Searcher
 from .objectives import Objective
-from .output import output_html, output_plot
+from .outputs import output_html, output_plot
 
 
 logging.basicConfig(level=logging.INFO)
