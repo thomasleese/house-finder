@@ -9,6 +9,7 @@ from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
 from .searcher import Searcher
 from .objectives import Objective
+from .output import output_html
 from .output.plot import objective_plotter
 
 
@@ -75,6 +76,8 @@ def optimise(house, secrets, output):
 
     logger.info(f'Filtered down to {len(pareto_front)} listings')
 
-    objective_plotter(pareto_front, objectives)
+    # objective_plotter(pareto_front, objectives)
+
+    output_html(pareto_front, objectives, output)
 
     # generate_output(output, pareto_front, objectives)
