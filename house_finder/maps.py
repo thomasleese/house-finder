@@ -19,8 +19,16 @@ class TravelTimeCalulator:
         self.cache = cache
 
     def __call__(self, **kwargs):
+        cache_key = {'travel_time': kwargs}
+
+        if cache_key in self.cache.data:
+            return self.cache.data[cache_key]
+
         params = self._create_search_params(**kwargs)
-        return self.calculate_time(**params)
+        duration = self.calculate_time(params)
+        self.cache.data[cache_key] = duration
+
+        return duration
 
     def _format_time(self, string):
         hour, minute = [int(x) for x in string.split(':')]
@@ -30,17 +38,10 @@ class TravelTimeCalulator:
                 .timestamp()
         )
 
-    def calculate_time(self, **params):
-        if params in self.cache.data:
-            duration = self.cache.data[params]
-        else:
-            duration = self._extract_duration(
-                self.gmaps.directions(**params)
-            )
-
-            self.cache.data[params] = duration
-
-        return duration
+    def calculate_time(self, params):
+        return self._extract_duration(
+            self.gmaps.directions(**params)
+        )
 
     def _extract_duration(self, results):
         try:
