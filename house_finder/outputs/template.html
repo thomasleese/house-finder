@@ -1,3 +1,18 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>House Finder Results</title>
+  </head>
+
+  <body>
+    <ul>
+      {% for evaluated_listing in evaluated_listings %}
+        <li>
+          <a href="{{ evaluated_listing.listing.url }}">
+            {{ evaluated_listing.listing.address }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
 </html>
