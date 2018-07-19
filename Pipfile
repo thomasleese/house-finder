@@ -12,5 +12,6 @@ googlemaps = "*"
 numpy = "*"
 matplotlib = "*"
 "progressbar2" = "*"
+"jinja2" = "*"
 
 [dev-packages]
