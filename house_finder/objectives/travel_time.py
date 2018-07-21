@@ -64,7 +64,7 @@ class SingleTravelTimeObjective(TravelTimeObjective):
             name = config['params']['from']
             direction = Direction.to_listing
 
-        lat_long = maps.find_latitude_longiture(name)
+        lat_long = maps.find_latitude_longitude(name)
 
         return cls(
             config['name'], config.get('maximum'), maps,
