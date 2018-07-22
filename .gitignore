@@ -64,7 +64,6 @@ target/
 # House Optimiser
 /caches
 /secrets.yaml
-
-outputs/*.pdf
+/output.html
 /.DS_Store
 /houses

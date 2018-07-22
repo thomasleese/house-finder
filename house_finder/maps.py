@@ -128,5 +128,5 @@ class Maps:
         gmaps = googlemaps.Client(key=api_key)
 
         self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
-        self.find_latitude_longiture = LatitudeLongitudeFinder(gmaps, cache)
+        self.find_latitude_longitude = LatitudeLongitudeFinder(gmaps, cache)
         self.find_nearby_places = NearbyPlacesFinder(gmaps, cache)
