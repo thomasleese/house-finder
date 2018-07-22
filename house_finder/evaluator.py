@@ -1,5 +1,6 @@
 from collections import OrderedDict, UserList
 import logging
+import threading
 from typing import Dict, NamedTuple, Callable
 
 from cached_property import cached_property
@@ -41,6 +42,14 @@ class Evaluator(UserList):
 
     def evaluate_listing(self, listing, objectives):
         logger.debug(f'Evaluating {listing.address}')
+
+        scores = OrderedDict()
+        threads = []
+        for objective in objectives:
+            thread = threading.Thread(, )
+
+        def evalulate_objective(scores):
+
 
         scores = OrderedDict([
             (objective.name, objective.calculate(listing))

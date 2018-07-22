@@ -60,6 +60,9 @@ class Searcher:
                 break
 
             for listing in json['listing']:
+                if listing['rental_prices']['shared_occupancy'] == 'Y':
+                    continue
+
                 id = listing['listing_id']
                 location = (listing['latitude'], listing['longitude'])
                 price = int(listing['price'])
