@@ -21,12 +21,12 @@ class Zoopla:
 
         property_listings_url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
         params = {
-            'area': self.query['area'],
-            'listing_status': self.query['type'],
-            'minimum_beds': self.query['bedrooms'][0],
-            'maximum_beds': self.query['bedrooms'][1],
-            'minimum_price': self.query['price'][0],
-            'maximum_price': self.query['price'][1],
+            'area': self.query.area,
+            'listing_status': self.query.type,
+            'minimum_beds': self.query.no_bedrooms.min,
+            'maximum_beds': self.query.no_bedrooms.max,
+            'minimum_price': self.query.price.min,
+            'maximum_price': self.query.price.max,
 
             'summarised': 'yes',
 
