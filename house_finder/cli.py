@@ -53,11 +53,13 @@ def main():
         e for e in evaluated_listings if e.is_valid and e.satisfies_constaints
     ]
 
+    logger.info(f'{len(listings)} listings satisfy the constraints.')
+
     logger.info("It's Pareto time!")
 
     pareto_front = ParetoFront(valid_evaluated_listings)
 
-    logger.info(f'Filtered down to {len(pareto_front)} listings')
+    logger.info(f'Filtered down to {len(pareto_front)} listings.')
 
     output_html(pareto_front, objectives, output)
     # output_plot(pareto_front, objectives)
