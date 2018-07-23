@@ -6,7 +6,7 @@ import yaml
 from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
-from .searcher import Searcher
+from .search import Zoopla
 from .objectives import Objective
 from .outputs import output_html, output_plot
 
@@ -36,7 +36,7 @@ def main():
     cache = Cache()
     maps = Maps(secrets['google']['api_key'], cache)
 
-    searcher = Searcher(cache, secrets, input['search']) # zoopler api
+    searcher = Zoopla(cache, secrets, input['search'])
 
     objectives = [
         Objective.from_dict(config, maps) for config in input['objectives']

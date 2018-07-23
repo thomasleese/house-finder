@@ -1,23 +1,12 @@
 import logging
-from typing import NamedTuple, Tuple
 
-import requests_cache
+from .listing import Listing
+
 
 logger = logging.getLogger(__name__)
 
 
-class Listing(NamedTuple):
-    id: str
-    location: Tuple[float, float]
-    price: int
-    url: str
-    print_url: str
-    address: str
-    description: str
-    image: str
-
-
-class Searcher:
+class Zoopla:
     """Search various property sites to find listings."""
 
     def __init__(self, cache, secrets, query):
@@ -25,7 +14,7 @@ class Searcher:
         self.secrets = secrets
         self.query = query
 
-    def search_zoopla(self):
+    def search(self):
         logger.info('Searching Zoopla...')
 
         session = self.cache.requests_session
@@ -71,6 +60,3 @@ class Searcher:
                 yield Listing(id, location, price, listing_url, print_url, address, description, image)
 
             params['page_number'] += 1
-
-    def search(self):
-        yield from self.search_zoopla()
