@@ -35,18 +35,17 @@ def main():
 
     cache = Cache()
     maps = Maps(secrets['google']['api_key'], cache)
+    zoopla = Zoopla(secrets['zoopla']['api_key'], cache)
 
     query = Query.from_config(input['search'])
-    searcher = Zoopla(cache, secrets, query)
 
     objectives = [
         Objective.from_dict(config, maps) for config in input['objectives']
     ]
 
-    listings = list(searcher.search())
-    logger.info('Found %i listings.', len(listings))
+    listings = list(zoopla.search(query))
 
-    # listings = listings[:1000]
+    logger.info(f'Found {len(listings)} listings.')
 
     evaluated_listings = Evaluator(listings, objectives)
 

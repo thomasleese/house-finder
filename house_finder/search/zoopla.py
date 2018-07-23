@@ -9,28 +9,27 @@ logger = logging.getLogger(__name__)
 class Zoopla:
     """Search various property sites to find listings."""
 
-    def __init__(self, cache, secrets, query):
+    def __init__(self, api_key, cache):
+        self.api_key = api_key
         self.cache = cache
-        self.secrets = secrets
-        self.query = query
 
-    def search(self):
+    def search(self, query):
         logger.info('Searching Zoopla...')
 
         session = self.cache.requests_session
 
         property_listings_url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
         params = {
-            'area': self.query.area,
-            'listing_status': self.query.type,
-            'minimum_beds': self.query.no_bedrooms.min,
-            'maximum_beds': self.query.no_bedrooms.max,
-            'minimum_price': self.query.price.min,
-            'maximum_price': self.query.price.max,
+            'area': query.area,
+            'listing_status': query.type,
+            'minimum_beds': query.no_bedrooms.min,
+            'maximum_beds': query.no_bedrooms.max,
+            'minimum_price': query.price.min,
+            'maximum_price': query.price.max,
 
             'summarised': 'yes',
 
-            'api_key': self.secrets['zoopla']['api_key'],
+            'api_key': self.api_key,
             'page_size': 100,
             'page_number': 1,
         }
