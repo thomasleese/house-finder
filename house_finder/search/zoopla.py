@@ -24,8 +24,6 @@ class Zoopla:
             'minimum_price': query.price.min,
             'maximum_price': query.price.max,
 
-            'summarised': 'yes',
-
             'api_key': self.api_key,
             'page_size': 100,
             'page_number': 1,
@@ -48,6 +46,12 @@ class Zoopla:
     def filter_listings(self, query, listings):
         for listing in listings:
             if listing['rental_prices']['shared_occupancy'] == 'Y' and not query.shared:
+                continue
+
+            if query.furnished and listing['furnished_state'] == 'unfurnished':
+                continue
+
+            if query.furnished is False and listing['furnished_state'] == 'furnished':
                 continue
 
             yield listing

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class Range(NamedTuple):
@@ -22,6 +22,7 @@ class Query(NamedTuple):
     no_bedrooms: Range
     price: Range
     shared: bool
+    furnished: Optional[bool]
 
     @classmethod
     def from_config(cls, config):
@@ -31,4 +32,5 @@ class Query(NamedTuple):
             Range.from_config(config['bedrooms']),
             Range.from_config(config['price']),
             config.get('shared', False),
+            config.get('furnished', None),
         )
