@@ -54,6 +54,9 @@ class Zoopla:
             if query.furnished is False and listing['furnished_state'] == 'furnished':
                 continue
 
+            if not listing['image_url']:
+                continue
+
             yield listing
 
     def search(self, query):
