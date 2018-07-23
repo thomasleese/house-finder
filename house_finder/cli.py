@@ -43,7 +43,7 @@ def main():
         Objective.from_dict(config, maps) for config in input['objectives']
     ]
 
-    listings = list(zoopla.search(query))
+    listings = zoopla.search(query)
 
     logger.info(f'Found {len(listings)} listings.')
 

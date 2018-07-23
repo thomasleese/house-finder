@@ -59,7 +59,7 @@ class Zoopla:
 
             yield listing
 
-    def search(self, query):
+    def _search(self, query):
         logger.info('Searching Zoopla...')
 
         session = self.cache.requests_session
@@ -79,3 +79,6 @@ class Zoopla:
                 yield self.build_listing(listing)
 
             params['page_number'] += 1
+
+    def search(self, query):
+        return list(set(self._search(query)))
