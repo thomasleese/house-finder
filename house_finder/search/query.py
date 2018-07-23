@@ -21,6 +21,7 @@ class Query(NamedTuple):
     type: str
     no_bedrooms: Range
     price: Range
+    shared: bool
 
     @classmethod
     def from_config(cls, config):
@@ -29,4 +30,5 @@ class Query(NamedTuple):
             config['type'],
             Range.from_config(config['bedrooms']),
             Range.from_config(config['price']),
+            config.get('shared', False),
         )
