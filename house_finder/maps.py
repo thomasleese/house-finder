@@ -124,8 +124,8 @@ class NearbyPlacesFinder:
 
 class Maps:
 
-    def __init__(self, api_key, cache):
-        gmaps = googlemaps.Client(key=api_key)
+    def __init__(self, secret, cache):
+        gmaps = googlemaps.Client(key=secret.key)
 
         self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
         self.find_latitude_longitude = LatitudeLongitudeFinder(gmaps, cache)

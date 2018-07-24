@@ -11,8 +11,8 @@ class Zoopla:
 
     url = 'http://api.zoopla.co.uk/api/v1/property_listings.json'
 
-    def __init__(self, api_key, cache):
-        self.api_key = api_key
+    def __init__(self, secret, cache):
+        self.secret = secret
         self.cache = cache
 
     def params_for_query(self, query):
@@ -24,7 +24,7 @@ class Zoopla:
             'minimum_price': query.price.min,
             'maximum_price': query.price.max,
 
-            'api_key': self.api_key,
+            'api_key': self.secret.key,
             'page_size': 100,
             'page_number': 1,
         }

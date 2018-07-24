@@ -6,9 +6,10 @@ import yaml
 from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
-from .search import Query, Zoopla
 from .objectives import Objective
 from .outputs import output_html, output_plot
+from .search import Query, Zoopla
+from .secrets import Secrets
 
 
 logging.basicConfig(level=logging.INFO)
@@ -31,16 +32,17 @@ def load_yaml(file_path):
 
 
 def main():
-    input, secrets, output = parse_arguments()
+    input_config, secrets_config, output = parse_arguments()
 
+    secrets = Secrets.from_config(secrets_config)
     cache = Cache()
-    maps = Maps(secrets['google']['api_key'], cache)
-    zoopla = Zoopla(secrets['zoopla']['api_key'], cache)
+    maps = Maps(secrets['google'], cache)
+    zoopla = Zoopla(secrets['zoopla'], cache)
 
-    query = Query.from_config(input['search'])
+    query = Query.from_config(input_config['search'])
 
     objectives = [
-        Objective.from_dict(config, maps) for config in input['objectives']
+        Objective.from_dict(config, maps) for config in input_config['objectives']
     ]
 
     listings = zoopla.search(query)
