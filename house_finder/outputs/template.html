@@ -7,6 +7,7 @@
     <title>House Finder Results</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="" />
   </head>
 
   <body>
@@ -21,6 +22,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item">
+              <a class="nav-link" href="#map">Map</a>
+            </li>
+
+            <li class="nav-item">
               <a class="nav-link" href="#results">Results</a>
             </li>
           </ul>
@@ -29,8 +34,40 @@
     </nav>
 
     <main class="container mt-3">
-      <a id="results"></a>
-      <table class="table table-striped">
+      <div id="map" style="height: 88vh;"></div>
+      <script>
+        function initMap() {
+          var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: {{ centre[0] }}, lng: {{ centre[1] }}},
+            zoom: 12
+          });
+
+          {% for evaluated_listing in evaluated_listings %}
+            (function() {
+              var position = {
+                lat: {{ evaluated_listing.listing.location[0] }},
+                lng: {{ evaluated_listing.listing.location[1] }},
+              };
+
+              var infowindow = new google.maps.InfoWindow({
+                content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a></h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p>',
+              });
+
+              var marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                title: '{{ evaluated_listing.listing.address }}',
+              });
+
+              marker.addListener('click', function() {
+                infowindow.open(map, marker);
+              });
+            }());
+          {% endfor %}
+        }
+      </script>
+
+      <table id="results" class="table table-striped mt-4">
         <thead>
           <tr>
             <th>Address</th>
@@ -61,5 +98,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ secrets['google'].key }}&callback=initMap" async defer></script>
   </body>
 </html>

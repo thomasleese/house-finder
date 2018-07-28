@@ -63,5 +63,5 @@ def main():
 
     logger.info(f'Filtered down to {len(pareto_front)} listings.')
 
-    output_html(pareto_front, objectives, output)
+    output_html(secrets, pareto_front, objectives, output)
     # output_plot(pareto_front, objectives)

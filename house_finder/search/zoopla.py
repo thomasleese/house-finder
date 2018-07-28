@@ -36,11 +36,11 @@ class Zoopla:
         listing_url = listing['details_url']
         print_url = 'http://www.zoopla.co.uk/to-rent/details/print/{}'.format(id)
         address = listing['displayable_address']
-        image = listing['image_url']
+        image_url = listing['image_url']
         description = listing['description']
 
         return Listing(
-            id, location, price, listing_url, print_url, address, description, image
+            id, location, price, listing_url, print_url, address, description, image_url
         )
 
     def filter_listings(self, query, listings):
