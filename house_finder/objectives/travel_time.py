@@ -39,7 +39,7 @@ class TravelTimeObjective(Objective):
 
     def present(self, score):
         minutes = round(score / 60)
-        return f'{minutes} mins'
+        return f'{minutes}&nbsp;mins'
 
     @staticmethod
     def from_dict(maps, config):
