@@ -1,6 +1,6 @@
 from collections import OrderedDict, UserList
 import logging
-from typing import Dict, NamedTuple, Callable
+from typing import Callable, Dict, NamedTuple, Optional
 
 from cached_property import cached_property
 import numpy as np
@@ -13,9 +13,17 @@ from .search import Listing
 logger = logging.getLogger(__name__)
 
 
+class Score(NamedTuple):
+    value: int
+    presented_value: str
+
+    def __str__(self):
+        return self.presented_value
+
+
 class EvaluatedListing(NamedTuple):
     listing: Listing
-    scores: Dict[str, float]
+    scores: Dict[str, Optional[Score]]
     constraints: Dict[str, Callable[[float], bool]]
 
     @property
@@ -28,7 +36,7 @@ class EvaluatedListing(NamedTuple):
 
     @property
     def satisfies_constaints(self):
-        return all(f(self.scores[obj]) for obj, f in self.constraints.items())
+        return all(f(self.scores[obj].value) for obj, f in self.constraints.items())
 
 
 class Evaluator(UserList):
@@ -42,10 +50,14 @@ class Evaluator(UserList):
     def evaluate_listing(self, listing, objectives):
         logger.debug(f'Evaluating {listing.address}')
 
-        scores = OrderedDict([
-            (objective.name, objective.calculate(listing))
-            for objective in objectives
-        ])
+        scores = OrderedDict()
+
+        for objective in objectives:
+            value = objective.calculate(listing)
+            if value is None:
+                scores[objective.name] = None
+            else:
+                scores[objective.name] = Score(value, objective.present(value))
 
         constraints = {
             objective.name: objective.constraint_function
@@ -69,7 +81,10 @@ class ParetoFront(UserList):
 
     @cached_property
     def score_table(self):
-        return np.array([list(e.scores.values()) for e in self.evaluated_listings])
+        return np.array([
+            [score.value for score in e.scores.values()]
+            for e in self.evaluated_listings
+        ])
 
     @cached_property
     def _pareto_front(self):

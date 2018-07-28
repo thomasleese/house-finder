@@ -3,11 +3,11 @@ from .objective import Objective
 
 class RentObjective(Objective):
 
-    def __init__(self, name):
-        super().__init__(name)
-
     def calculate(self, listing):
         return listing.price
+
+    def present(self, score):
+        return f'£{score}'
 
     @classmethod
     def from_dict(cls, config):

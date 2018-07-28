@@ -37,6 +37,9 @@ class TravelTimeObjective(Objective):
         except NoTravelTimeError:
             return None
 
+    def present(self, score):
+        minutes = round(score / 60)
+        return f'{minutes} mins'
 
     @staticmethod
     def from_dict(maps, config):
