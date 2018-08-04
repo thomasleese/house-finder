@@ -42,27 +42,40 @@
             zoom: 12
           });
 
-          {% for evaluated_listing in evaluated_listings %}
-            (function() {
-              var position = {
-                lat: {{ evaluated_listing.listing.location[0] }},
-                lng: {{ evaluated_listing.listing.location[1] }},
-              };
+          var icons = [
+            'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+          ];
 
-              var infowindow = new google.maps.InfoWindow({
-                content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a></h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p>',
-              });
+          {% for evaluated_listings in ranked_evaluted_listings %}
+            {% set outer_loop = loop %}
+            {% for evaluated_listing in evaluated_listings %}
+              (function() {
+                var position = {
+                  lat: {{ evaluated_listing.listing.location[0] }},
+                  lng: {{ evaluated_listing.listing.location[1] }},
+                };
 
-              var marker = new google.maps.Marker({
-                position: position,
-                map: map,
-                title: '{{ evaluated_listing.listing.address }}',
-              });
+                var infowindow = new google.maps.InfoWindow({
+                  content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a></h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p>',
+                });
 
-              marker.addListener('click', function() {
-                infowindow.open(map, marker);
-              });
-            }());
+                var marker = new google.maps.Marker({
+                  position: position,
+                  map: map,
+                  title: '{{ evaluated_listing.listing.address }}',
+                  icon: icons[{{ outer_loop.index0 }}],
+                });
+
+                marker.addListener('click', function() {
+                  infowindow.open(map, marker);
+                });
+              }());
+            {% endfor %}
           {% endfor %}
         }
       </script>
@@ -71,6 +84,7 @@
         <thead>
           <tr>
             <th>Address</th>
+            <th>Rank</th>
             {% for objective in objectives %}
               <th>{{ objective.name }}</th>
             {% endfor %}
@@ -78,18 +92,23 @@
         </thead>
 
         <tbody>
-          {% for evaluated_listing in evaluated_listings %}
-            <tr>
-              <th>
-                <a href="{{ evaluated_listing.listing.url }}">
-                  {{ evaluated_listing.listing.address }}
-                </a>
-              </th>
+          {% for evaluated_listings in ranked_evaluted_listings %}
+            {% set outer_loop = loop %}
+            {% for evaluated_listing in evaluated_listings %}
+              <tr>
+                <th>
+                  <a href="{{ evaluated_listing.listing.url }}">
+                    {{ evaluated_listing.listing.address }}
+                  </a>
+                </th>
 
-              {% for objective in objectives %}
-                <td>{{ evaluated_listing.scores[objective.name] | safe }}</td>
-              {% endfor %}
-            </tr>
+                <th>{{ outer_loop.index }}</th>
+
+                {% for objective in objectives %}
+                  <td>{{ evaluated_listing.scores[objective.name] | safe }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
           {% endfor %}
         </tbody>
       </table>

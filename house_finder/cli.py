@@ -4,7 +4,7 @@ import logging
 import yaml
 
 from .cache import Cache
-from .evaluator import Evaluator, ParetoFront
+from .evaluator import Evaluator
 from .maps import Maps
 from .objectives import Objective
 from .outputs import output_html, output_plot
@@ -57,11 +57,4 @@ def main():
 
     logger.info(f'{len(listings)} listings satisfy the constraints.')
 
-    logger.info("It's Pareto time!")
-
-    pareto_front = ParetoFront(valid_evaluated_listings)
-
-    logger.info(f'Filtered down to {len(pareto_front)} listings.')
-
-    output_html(secrets, pareto_front, objectives, output)
-    # output_plot(pareto_front, objectives)
+    output_html(secrets, valid_evaluated_listings, objectives, output)
