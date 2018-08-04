@@ -61,6 +61,8 @@
             'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
           ];
 
+          var oldInfoWindow = undefined;
+
           {% for evaluated_listings in ranked_evaluted_listings %}
             {% set outer_loop = loop %}
             {% for evaluated_listing in evaluated_listings %}
@@ -70,8 +72,8 @@
                   lng: {{ evaluated_listing.listing.location[1] }},
                 };
 
-                var infowindow = new google.maps.InfoWindow({
-                  content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a></h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p>',
+                var infoWindow = new google.maps.InfoWindow({
+                  content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a> #{{ outer_loop.index }}</h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p><p>{% for objective in objectives %}<strong>{{ objective.name }}:</strong> {{ evaluated_listing.scores[objective.name] | safe }}<br />{% endfor %}</p>',
                 });
 
                 var marker = new google.maps.Marker({
@@ -82,7 +84,12 @@
                 });
 
                 marker.addListener('click', function() {
-                  infowindow.open(map, marker);
+                  if (oldInfoWindow) {
+                    oldInfoWindow.close();
+                  }
+
+                  infoWindow.open(map, marker);
+                  oldInfoWindow = infoWindow;
                 });
               }());
             {% endfor %}
