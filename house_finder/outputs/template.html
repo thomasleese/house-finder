@@ -34,7 +34,17 @@
     </nav>
 
     <main class="container mt-3">
+      <div class="mb-2">
+        <img src="http://maps.google.com/mapfiles/ms/icons/green-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/orange-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/yellow-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/red-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/purple-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" />
+      </div>
+
       <div id="map" style="height: 88vh;"></div>
+
       <script>
         function initMap() {
           var map = new google.maps.Map(document.getElementById('map'), {
@@ -43,12 +53,12 @@
           });
 
           var icons = [
-            'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
             'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
             'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
             'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
             'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
             'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
           ];
 
           {% for evaluated_listings in ranked_evaluted_listings %}
