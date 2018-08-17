@@ -4,6 +4,12 @@ class Objective:
         self.name = name
         self.maximum = maximum
 
+    def calculate(self, listing):
+        raise NotImplementedError('calculate must be implemented')
+
+    def present(self, score):
+        raise NotImplementedError('present must be implemented')
+
     @property
     def constraint_function(self):
         if self.maximum:

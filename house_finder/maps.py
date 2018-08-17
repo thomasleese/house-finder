@@ -25,8 +25,13 @@ class TravelTimeCalulator:
             return self.cache.data[cache_key]
 
         params = self._create_search_params(**kwargs)
-        duration = self.calculate_time(params)
-        self.cache.data[cache_key] = duration
+
+        try:
+            duration = self.calculate_time(params)
+        except googlemaps.exceptions.TransportError:
+            return None
+        else:
+            self.cache.data[cache_key] = duration
 
         return duration
 

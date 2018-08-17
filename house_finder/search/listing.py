@@ -9,4 +9,4 @@ class Listing(NamedTuple):
     print_url: str
     address: str
     description: str
-    image: str
+    image_url: str

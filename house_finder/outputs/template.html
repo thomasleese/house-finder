@@ -1,18 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
     <title>House Finder Results</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="" />
   </head>
 
   <body>
-    <ul>
-      {% for evaluated_listing in evaluated_listings %}
-        <li>
-          <a href="{{ evaluated_listing.listing.url }}">
-            {{ evaluated_listing.listing.address }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <span class="navbar-brand">House Finder</span>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="#map">Map</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="#results">Results</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mt-3">
+      <div class="mb-2">
+        <img src="http://maps.google.com/mapfiles/ms/icons/green-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/orange-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/yellow-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/red-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/purple-dot.png" />
+        <img src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" />
+      </div>
+
+      <div id="map" style="height: 88vh;"></div>
+
+      <script>
+        function initMap() {
+          var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: {{ centre[0] }}, lng: {{ centre[1] }}},
+            zoom: 12
+          });
+
+          var icons = [
+            'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+            'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          ];
+
+          var oldInfoWindow = undefined;
+
+          {% for evaluated_listings in ranked_evaluted_listings %}
+            {% set outer_loop = loop %}
+            {% for evaluated_listing in evaluated_listings %}
+              (function() {
+                var position = {
+                  lat: {{ evaluated_listing.listing.location[0] }},
+                  lng: {{ evaluated_listing.listing.location[1] }},
+                };
+
+                var infoWindow = new google.maps.InfoWindow({
+                  content: '<h6><a href="{{ evaluated_listing.listing.url }}">{{ evaluated_listing.listing.address }}</a> #{{ outer_loop.index }}</h6><p><img src="{{ evaluated_listing.listing.image_url }}" /></p><p>{% for objective in objectives %}<strong>{{ objective.name }}:</strong> {{ evaluated_listing.scores[objective.name] | safe }}<br />{% endfor %}</p>',
+                });
+
+                var marker = new google.maps.Marker({
+                  position: position,
+                  map: map,
+                  title: '{{ evaluated_listing.listing.address }}',
+                  icon: icons[{{ outer_loop.index0 }}],
+                });
+
+                marker.addListener('click', function() {
+                  if (oldInfoWindow) {
+                    oldInfoWindow.close();
+                  }
+
+                  infoWindow.open(map, marker);
+                  oldInfoWindow = infoWindow;
+                });
+              }());
+            {% endfor %}
+          {% endfor %}
+        }
+      </script>
+
+      <table id="results" class="table table-striped mt-4">
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Rank</th>
+            {% for objective in objectives %}
+              <th>{{ objective.name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for evaluated_listings in ranked_evaluted_listings %}
+            {% set outer_loop = loop %}
+            {% for evaluated_listing in evaluated_listings %}
+              <tr>
+                <th>
+                  <a href="{{ evaluated_listing.listing.url }}">
+                    {{ evaluated_listing.listing.address }}
+                  </a>
+                </th>
+
+                <th>{{ outer_loop.index }}</th>
+
+                {% for objective in objectives %}
+                  <td>{{ evaluated_listing.scores[objective.name] | safe }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ secrets['google'].key }}&callback=initMap" async defer></script>
   </body>
 </html>
