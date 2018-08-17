@@ -14,8 +14,8 @@ class NoTravelTimeError(Exception):
 
 class TravelTimeCalulator:
 
-    def __init__(self, gmaps, cache):
-        self.gmaps = gmaps
+    def __init__(self, maps, cache):
+        self.maps = maps
         self.cache = cache
 
     def __call__(self, **kwargs):
@@ -40,7 +40,7 @@ class TravelTimeCalulator:
 
     def calculate_time(self, params):
         return self._extract_duration(
-            self.gmaps.directions(**params)
+            self.maps.query(lambda gmaps: gmaps.directions(**params))
         )
 
     def _extract_duration(self, results):
@@ -70,8 +70,8 @@ class TravelTimeCalulator:
 
 class LatitudeLongitudeFinder:
 
-    def __init__(self, gmaps, cache):
-        self.gmaps = gmaps
+    def __init__(self, maps, cache):
+        self.maps = maps
         self.cache = cache
 
     def __call__(self, query):
@@ -81,7 +81,8 @@ class LatitudeLongitudeFinder:
         if cache_key in self.cache.data:
             return self.cache.data[cache_key]
 
-        results = self.gmaps.geocode(query)
+        results = self.maps.query(lambda gmaps: gmaps.geocode(query))
+
         location = results[0]['geometry']['location']
         lat_long = (location['lat'], location['lng'])
 
@@ -93,8 +94,8 @@ class LatitudeLongitudeFinder:
 
 class NearbyPlacesFinder:
 
-    def __init__(self, gmaps, cache):
-        self.gmaps = gmaps
+    def __init__(self, maps, cache):
+        self.maps = maps
         self.cache = cache
 
     def __call__(self, location, place_type):
@@ -109,10 +110,10 @@ class NearbyPlacesFinder:
         if cache_key in self.cache.data:
             return self.cache.data[cache_key]
 
-        results = self.gmaps.places_nearby(
+        results = self.maps.query(lambda gmaps: gmaps.places_nearby(
             location=location, type=place_type, rank_by='distance',
             keyword=place_type,
-        )
+        ))
 
         results = results['results']
 
@@ -124,9 +125,30 @@ class NearbyPlacesFinder:
 
 class Maps:
 
-    def __init__(self, api_key, cache):
-        gmaps = googlemaps.Client(key=api_key)
+    def __init__(self, secret, cache):
+        self.secret = secret
 
-        self.calculate_travel_time = TravelTimeCalulator(gmaps, cache)
-        self.find_latitude_longitude = LatitudeLongitudeFinder(gmaps, cache)
-        self.find_nearby_places = NearbyPlacesFinder(gmaps, cache)
+        self.calculate_travel_time = TravelTimeCalulator(self, cache)
+        self.find_latitude_longitude = LatitudeLongitudeFinder(self, cache)
+        self.find_nearby_places = NearbyPlacesFinder(self, cache)
+
+        self.set_gmaps()
+
+    def query(self, function):
+        while True:
+            try:
+                result = function(self.gmaps)
+            except googlemaps.exceptions._OverQueryLimit:
+                self.rotate_gmaps()
+            else:
+                return result
+
+    def rotate_gmaps(self):
+        self.secret.rotate()
+        self.set_gmaps()
+
+    def set_gmaps(self):
+        self.gmaps = googlemaps.Client(
+            key=self.secret.key,
+            retry_over_query_limit=False,
+        )
