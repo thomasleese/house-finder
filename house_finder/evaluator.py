@@ -7,7 +7,7 @@ import numpy as np
 import progressbar
 
 from .objectives import Objective
-from .searcher import Listing
+from .search import Listing
 
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ import yaml
 from .cache import Cache
 from .evaluator import Evaluator, ParetoFront
 from .maps import Maps
-from .searcher import Searcher
+from .search import Query, Zoopla
 from .objectives import Objective
 from .outputs import output_html, output_plot
 
@@ -35,17 +35,17 @@ def main():
 
     cache = Cache()
     maps = Maps(secrets['google']['api_key'], cache)
+    zoopla = Zoopla(secrets['zoopla']['api_key'], cache)
 
-    searcher = Searcher(cache, secrets, input['search']) # zoopler api
+    query = Query.from_config(input['search'])
 
     objectives = [
         Objective.from_dict(config, maps) for config in input['objectives']
     ]
 
-    listings = list(searcher.search())
-    logger.info('Found %i listings.', len(listings))
+    listings = zoopla.search(query)
 
-    # listings = listings[:1000]
+    logger.info(f'Found {len(listings)} listings.')
 
     evaluated_listings = Evaluator(listings, objectives)
 
@@ -53,11 +53,13 @@ def main():
         e for e in evaluated_listings if e.is_valid and e.satisfies_constaints
     ]
 
+    logger.info(f'{len(listings)} listings satisfy the constraints.')
+
     logger.info("It's Pareto time!")
 
     pareto_front = ParetoFront(valid_evaluated_listings)
 
-    logger.info(f'Filtered down to {len(pareto_front)} listings')
+    logger.info(f'Filtered down to {len(pareto_front)} listings.')
 
     output_html(pareto_front, objectives, output)
     # output_plot(pareto_front, objectives)
