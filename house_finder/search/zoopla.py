@@ -46,7 +46,7 @@ class Zoopla:
 
     def filter_listings(self, query, listings):
         for listing in listings:
-            if listing['rental_prices']['shared_occupancy'] == 'Y' and not query.shared:
+            if listing.get('rental_prices', {}).get('shared_occupancy') == 'Y' and not query.shared:
                 continue
 
             if query.furnished and listing['furnished_state'] == 'unfurnished':
