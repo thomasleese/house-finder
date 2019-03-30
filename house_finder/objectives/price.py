@@ -1,7 +1,7 @@
 from .objective import Objective
 
 
-class RentObjective(Objective):
+class PriceObjective(Objective):
 
     def calculate(self, listing):
         return listing.price

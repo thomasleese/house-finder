@@ -19,10 +19,10 @@ class Objective:
 
     @staticmethod
     def from_dict(config, maps):
-        from .rent import RentObjective
+        from .price import PriceObjective
         from .travel_time import TravelTimeObjective
 
         if config['type'] == 'travel_time':
             return TravelTimeObjective.from_dict(maps, config)
-        elif config['type'] == 'rent':
-            return RentObjective.from_dict(config)
+        elif config['type'] == 'price':
+            return PriceObjective.from_dict(config)
