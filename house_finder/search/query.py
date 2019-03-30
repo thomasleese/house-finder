@@ -18,19 +18,21 @@ class Range(NamedTuple):
 
 class Query(NamedTuple):
     area: str
-    type: str
+    listing: str
     no_bedrooms: Range
     price: Range
     shared: bool
     furnished: Optional[bool]
+    property: Optional[str]
 
     @classmethod
     def from_config(cls, config):
         return Query(
             config['area'],
-            config['type'],
+            config['listing'],
             Range.from_config(config['bedrooms']),
             Range.from_config(config['price']),
             config.get('shared', False),
             config.get('furnished', None),
+            config.get('property', None),
         )

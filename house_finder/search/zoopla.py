@@ -18,11 +18,12 @@ class Zoopla:
     def params_for_query(self, query):
         return {
             'area': query.area,
-            'listing_status': query.type,
+            'listing_status': query.listing,
             'minimum_beds': query.no_bedrooms.min,
             'maximum_beds': query.no_bedrooms.max,
             'minimum_price': query.price.min,
             'maximum_price': query.price.max,
+            'property_type': query.property,
 
             'api_key': self.secret.key,
             'page_size': 100,
