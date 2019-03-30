@@ -24,6 +24,7 @@ class Query(NamedTuple):
     shared: bool
     furnished: Optional[bool]
     property: Optional[str]
+    new: Optional[bool]
 
     @classmethod
     def from_config(cls, config):
@@ -35,4 +36,5 @@ class Query(NamedTuple):
             config.get('shared', False),
             config.get('furnished', None),
             config.get('property', None),
+            config.get('new', None),
         )

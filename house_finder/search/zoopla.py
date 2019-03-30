@@ -24,6 +24,7 @@ class Zoopla:
             'minimum_price': query.price.min,
             'maximum_price': query.price.max,
             'property_type': query.property,
+            'new_homes': query.new,
 
             'api_key': self.secret.key,
             'page_size': 100,
